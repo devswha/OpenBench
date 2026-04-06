@@ -1,0 +1,19 @@
+name: runtime
+tier: 0
+description: Runtime measurements for coding-agent CLI commands
+tasks:
+  - name: startup
+    prompt: Measure startup latency for the agent CLI
+    timeout: 30
+    metadata:
+      metric: startup_ms
+  - name: memory
+    prompt: Measure peak memory while invoking the agent CLI
+    timeout: 30
+    metadata:
+      metric: memory_mb
+  - name: binary-size
+    prompt: Measure disk footprint of the agent CLI binary/script
+    timeout: 15
+    metadata:
+      metric: binary_size_mb

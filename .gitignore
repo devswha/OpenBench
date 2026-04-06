@@ -28,6 +28,11 @@ results/
 
 # OMC state
 .omc/
+.omx/*
+!.omx/plans/
+.omx/plans/*
+!.omx/plans/prd-openbench-mvp.md
+!.omx/plans/test-spec-openbench-mvp.md
 
 # OS
 .DS_Store

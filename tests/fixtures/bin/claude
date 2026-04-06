@@ -1,0 +1,9 @@
+#!/usr/bin/env python3
+import sys
+
+if "--version" in sys.argv:
+    print("claude 0.0-test")
+    raise SystemExit(0)
+
+print("fake claude invocation")
+raise SystemExit(0)

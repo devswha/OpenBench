@@ -1,0 +1,21 @@
+#!/usr/bin/env python3
+import json
+import sys
+from pathlib import Path
+
+args = sys.argv[1:]
+export_path = None
+command = args[-1] if args else ""
+for index, arg in enumerate(args):
+    if arg == "--export-json" and index + 1 < len(args):
+        export_path = Path(args[index + 1])
+        break
+
+if export_path is None:
+    print("missing --export-json", file=sys.stderr)
+    raise SystemExit(1)
+
+payload = {"results": [{"command": command, "mean": 0.123}]}
+export_path.write_text(json.dumps(payload))
+print("hyperfine shim completed")
+raise SystemExit(0)

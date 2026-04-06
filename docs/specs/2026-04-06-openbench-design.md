@@ -1,8 +1,16 @@
-# OpenBench Design Spec
+# OpenBench Technical Design
 
 **Date:** 2026-04-06
 **Status:** Draft
 **Author:** devswha
+
+## Document Role & Scope
+
+This document is the **technical design / target architecture** for OpenBench.
+
+- For **Phase 1 MVP execution scope**, use `.omx/plans/prd-openbench-mvp.md` as the authoritative product document.
+- For **Phase 1 verification scope**, use `.omx/plans/test-spec-openbench-mvp.md` as the authoritative test document.
+- The module layout, CLI surface, and reporting flow below describe the **target system shape across multiple phases**, not the minimum file inventory that must exist before Phase 1 implementation starts.
 
 ## Overview
 
@@ -25,6 +33,8 @@ OpenBench is an open-source benchmarking framework for coding agents. It provide
 
 ### Directory Structure
 
+Target architecture (future-state, not the minimum current file set):
+
 ```
 OpenBench/
 ├── openbench/
@@ -43,7 +53,7 @@ OpenBench/
 │   │   └── orchestration/   # Tier 2: multi-file edit, debugging, planning
 │   ├── metrics/             # Measurement collection & normalization
 │   │   ├── __init__.py
-│   │   └── collector.py     # MetricsCollector
+│   │   └── store.py         # ResultStore
 │   ├── reporters/           # Output generation
 │   │   ├── __init__.py
 │   │   ├── json_reporter.py
@@ -77,12 +87,14 @@ CLI (click)
     → AgentAdapter.setup()
     → BenchSuite.load_tasks()
     → for task in tasks:
-        → AgentAdapter.run(task)
-        → MetricsCollector.collect(run_result)
+        → AgentAdapter.run(task) → RunResult
         → BenchSuite.evaluate(run_result) → Score
+        → ResultStore.save(score)
     → AgentAdapter.cleanup()
     → Reporter.generate(scores)
 ```
+
+For Phase 1 MVP, the required end-to-end slice stops at **successful runtime execution + persisted results**. Report-generation workflows are planned for later phases.
 
 ## Agent Adapter Interface
 
@@ -91,7 +103,24 @@ All agents implement `AgentAdapter`, the single extension point for adding new a
 ```python
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
+from enum import Enum
 from pathlib import Path
+
+class RunStatus(Enum):
+    SUCCESS = "success"
+    FAILED = "failed"
+    TIMEOUT = "timeout"
+    OOM = "oom"
+    CRASH = "crash"
+    SETUP_ERROR = "setup_error"
+
+@dataclass
+class TokenUsage:
+    input_tokens: int
+    output_tokens: int
+    total_tokens: int
+    estimated_cost_usd: float | None
+    provider: str  # "anthropic", "openai", etc.
 
 @dataclass
 class Task:
@@ -105,13 +134,14 @@ class Task:
 @dataclass
 class RunResult:
     task: Task
-    success: bool
+    status: RunStatus
     output: str              # Agent's stdout/stderr
     duration_ms: int
     peak_memory_mb: float
-    token_usage: int | None  # API token count if available
+    token_usage: TokenUsage | None
     files_changed: list[str]
     exit_code: int
+    error_message: str | None
 
 class AgentAdapter(ABC):
     name: str                # Unique identifier: "omc", "omx", "omo"
@@ -254,7 +284,33 @@ evaluation:
 timeout: 300
 ```
 
-## Metrics Collection
+### Task Validation
+
+All task YAML files should be validated against a typed schema on load. This catches missing fields, wrong types, and suite-specific misconfigurations before any agent runs. Phase 1 may use **pydantic or an equivalent validation approach**, but the chosen implementation must match `pyproject.toml` dependencies.
+
+Example if pydantic is chosen:
+
+```python
+from pydantic import BaseModel
+
+class TaskDefinition(BaseModel):
+    name: str
+    prompt: str
+    timeout: int = 300
+    # SWE-bench specific
+    source: str | None = None
+    repo: str | None = None
+    commit: str | None = None
+    test_command: str | None = None
+    # Orchestration specific
+    workspace_repo: str | None = None
+    expected: dict | None = None
+    evaluation: list[dict] | None = None
+```
+
+## Results Storage & Metrics
+
+`ResultStore` persists scores to disk after each task evaluation, writing JSON files under `results/`. It is the single writer of benchmark output and serves as the source of truth for all reporters.
 
 ### Core Metrics
 
@@ -271,11 +327,26 @@ timeout: 300
 ### Normalization
 
 All scores are normalized to 0-100 for cross-suite comparison:
-- Runtime metrics: inverse-scaled (lower is better → higher score)
 - Correctness: percentage of tests passed
 - LLM judge: 0-100 rating from the judge model
+- Runtime metrics: log-scaled so that the reference value earns 50 points (lower is better → higher score)
 
-## Results Storage
+```python
+import math
+
+def normalize_runtime(value_ms: float, reference_ms: float = 1000.0) -> float:
+    """Score 0-100 where reference_ms gets 50 points.
+    Uses log scale to handle wide variance (50ms vs 10000ms)."""
+    if value_ms <= 0:
+        return 100.0
+    ratio = reference_ms / value_ms
+    score = 50.0 + 50.0 * math.log2(ratio) / math.log2(10)
+    return max(0.0, min(100.0, score))
+```
+
+Reference values are configurable per suite via `openbench.toml` or CLI flags. Default references: startup 1000ms, memory 512MB, binary size 100MB.
+
+### Directory Layout
 
 ```
 results/
@@ -292,12 +363,24 @@ results/
 
 ### Manifest Schema
 
+The example below shows the long-horizon manifest shape. Phase 1 may persist only the `runtime` suite for `omc`, but it should preserve the same core metadata fields and versioning strategy.
+
 ```json
 {
   "version": "1.0",
   "timestamp": "2026-04-06T12:00:00Z",
-  "agents": ["omc", "omx", "omo"],
+  "agents": {
+    "omc": { "version": "3.4.1", "command": "claude" },
+    "omx": { "version": "1.2.0", "command": "codex" },
+    "omo": { "version": "0.8.0", "command": "openagent" }
+  },
   "suites": ["runtime", "swe-bench-lite", "orchestration"],
+  "judge_model": "claude-sonnet-4-20250514",
+  "normalization_references": {
+    "startup_ms": 1000,
+    "memory_mb": 512,
+    "binary_size_mb": 100
+  },
   "environment": {
     "os": "Linux 6.8.0",
     "cpu": "AMD Ryzen 9 7950X",
@@ -308,6 +391,22 @@ results/
 ```
 
 ## CLI Interface
+
+### Phase 1 MVP CLI (authoritative for initial implementation)
+
+```bash
+# Run the MVP runtime slice
+openbench run --agent omc --suite runtime
+
+# List available agents and suites
+openbench list agents
+openbench list suites
+
+# Check environment readiness
+openbench doctor
+```
+
+### Planned post-MVP CLI surface
 
 ```bash
 # Run all suites for all agents
@@ -332,13 +431,13 @@ openbench doctor
 
 ### CLI Commands
 
-| Command | Description |
-|---------|-------------|
-| `run` | Execute benchmarks |
-| `list` | List available agents/suites |
-| `report` | Generate reports from results |
-| `doctor` | Check agent installations |
-| `compare` | Compare two result sets |
+| Command | Availability | Description |
+|---------|--------------|-------------|
+| `run` | Phase 1 MVP | Execute benchmarks |
+| `list` | Phase 1 MVP | List available agents/suites |
+| `doctor` | Phase 1 MVP | Check agent installations |
+| `report` | Post-MVP | Generate reports from results |
+| `compare` | Post-MVP | Compare two result sets |
 
 ## Leaderboard
 
@@ -368,31 +467,46 @@ Weights are configurable via CLI flag or config file.
 1. `AgentAdapter` base class + OMC adapter
 2. Runtime suite (Tier 0) — startup, memory, binary size
 3. `Runner` execution engine
-4. JSON reporter
+4. `ResultStore` + manifest persistence
 5. CLI (`run`, `list`, `doctor`)
+6. Task dataclass finalization (`RunStatus`, `TokenUsage`)
+7. Temp-directory `WorkspaceManager` protocol definition
+8. Task YAML validation + minimal `openbench.toml` parsing
 
 ### Phase 2: Task Completion
-6. `BenchSuite` base class + SWE-bench Lite integration
-7. Task YAML loader
-8. Deterministic evaluator
-9. OMX + OMO adapters
+9. `BenchSuite` base class hardening
+10. OMX + OMO adapters
+11. SWE-bench Lite integration + deterministic evaluator
+12. Task-completion task loader expansion
 
 ### Phase 3: Orchestration & Reporting
-10. Orchestration suite with custom tasks
-11. LLM judge evaluator
-12. HTML leaderboard with Plotly charts
-13. Markdown reporter
-14. `compare` command
+13. Orchestration suite with custom tasks
+14. LLM judge evaluator
+15. HTML leaderboard with Plotly charts
+16. Markdown reporter + `report` / `compare` workflows
+17. Task-level parallel execution (asyncio/concurrent.futures)
 
 ### Phase 4: Polish
-15. CI/CD integration (GitHub Actions)
-16. Contribution guide
-17. Test repo fixtures
-18. Documentation site
+18. CI/CD integration (GitHub Actions)
+19. Contribution guide
+20. Test repo fixtures
+21. Documentation site
 
-## Open Decisions
+## Phase 1 Decisions Fixed
 
-- **LLM judge model:** Which model to use for Tier 2 evaluation? (Claude, GPT-4, or configurable)
+- **Execution scope:** Phase 1 implements one adapter (`omc`), one suite (`runtime`), one persisted result path, and the `run` / `list` / `doctor` CLI path.
+- **Workspace isolation:** Phase 1 uses temp directories. Docker and git-worktree isolation are deferred.
+- **Judge policy:** Phase 1 uses no LLM judge. Runtime benchmarking remains deterministic.
+- **Result versioning:** Phase 1 writes schema version `1.0` metadata in `manifest.json` under `results/<timestamp>/`.
+- **Config scope:** Phase 1 may support a minimal `openbench.toml` limited to results directory and normalization references. CLI flags override config defaults.
+
+## Later-Phase Open Decisions
+
+- **LLM judge model:** Which model to use for Tier 2 evaluation once orchestration scoring lands? (Claude, GPT-4, or configurable)
+  **Recommendation:** Configurable with default Claude Sonnet. Add an `LLMJudge` protocol so the judge backend is swappable. Record the judge model used in `manifest.json` for reproducibility.
+
 - **Test repos:** Host fixture repos under an OpenBench GitHub org, or inline in the repo?
+  **Recommendation:** Separate GitHub org (`github.com/openbench`), referenced by URL in task YAML. Local cache at `~/.openbench/repos/` to avoid repeated clones.
+
 - **Token counting:** Each agent tracks tokens differently — standardize or report as-is?
-- **Workspace isolation:** Docker containers vs temp directories vs git worktrees?
+  **Recommendation:** Report as-is per agent via the `TokenUsage` dataclass. Add estimated cost (USD) as a secondary metric via `estimated_cost_usd` field. No forced standardization — transparency over false precision.
