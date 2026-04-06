@@ -1,0 +1,34 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+dist/
+build/
+.eggs/
+*.egg
+
+# Virtual environment
+.venv/
+venv/
+ENV/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Results (generated, not committed)
+results/
+
+# Environment
+.env
+.env.*
+
+# OMC state
+.omc/
+
+# OS
+.DS_Store
+Thumbs.db
