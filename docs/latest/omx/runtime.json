@@ -1,0 +1,69 @@
+{
+  "agent": "omx",
+  "generated_at": "2026-04-07T07:01:39.739532+00:00",
+  "suite": "runtime",
+  "summary": {
+    "failed_tasks": 0,
+    "successful_tasks": 3,
+    "task_count": 3
+  },
+  "tasks": [
+    {
+      "agent_name": "omx",
+      "raw": {
+        "available": true,
+        "command": "/home/devswha/.nvm/versions/node/v22.17.1/bin/omx --version",
+        "error_message": null,
+        "exit_code": 0,
+        "metric": "startup_ms",
+        "output": "Benchmark 1: /home/devswha/.nvm/versions/node/v22.17.1/bin/omx --version\n  Time (mean \u00b1 \u03c3):     162.1 ms \u00b1  35.1 ms    [User: 101.1 ms, System: 30.9 ms]\n  Range (min \u2026 max):   127.5 ms \u2026 281.2 ms    19 runs",
+        "status": "success",
+        "task_name": "startup",
+        "unit": "ms",
+        "value": 162.13052810736843
+      },
+      "status": "success",
+      "task_name": "startup",
+      "tier": 0,
+      "value": 89.50676013349035
+    },
+    {
+      "agent_name": "omx",
+      "raw": {
+        "available": true,
+        "error_message": null,
+        "exit_code": 0,
+        "metric": "memory_mb",
+        "output": "oh-my-codex v0.11.13\nNode.js v22.17.1\nPlatform: linux x64\nCommand being timed: \"/home/devswha/.nvm/versions/node/v22.17.1/bin/omx --version\"\n\tUser time (seconds): 0.09\n\tSystem time (seconds): 0.03\n\tPercent of CPU this job got: 82%\n\tElapsed (wall clock) time (h:mm:ss or m:ss): 0:00.15\n\tAverage shared text size (kbytes): 0\n\tAverage unshared data size (kbytes): 0\n\tAverage stack size (kbytes): 0\n\tAverage total size (kbytes): 0\n\tMaximum resident set size (kbytes): 63476\n\tAverage resident set size (kbytes): 0\n\tMajor (requiring I/O) page faults: 0\n\tMinor (reclaiming a frame) page faults: 5328\n\tVoluntary context switches: 634\n\tInvoluntary context switches: 256\n\tSwaps: 0\n\tFile system inputs: 0\n\tFile system outputs: 0\n\tSocket messages sent: 0\n\tSocket messages received: 0\n\tSignals delivered: 0\n\tPage size (bytes): 4096\n\tExit status: 0",
+        "peak_memory_mb": 61.98828125,
+        "status": "success",
+        "task_name": "memory",
+        "unit": "MB",
+        "value": 61.98828125
+      },
+      "status": "success",
+      "task_name": "memory",
+      "tier": 0,
+      "value": 95.84801830734531
+    },
+    {
+      "agent_name": "omx",
+      "raw": {
+        "available": true,
+        "error_message": null,
+        "exit_code": 0,
+        "metric": "binary_size_mb",
+        "output": "47\t/home/devswha/.nvm/versions/node/v22.17.1/bin/omx",
+        "status": "success",
+        "task_name": "binary-size",
+        "unit": "MB",
+        "value": 4.482269287109375e-05,
+        "value_bytes": 47
+      },
+      "status": "success",
+      "task_name": "binary-size",
+      "tier": 0,
+      "value": 100.0
+    }
+  ]
+}

@@ -31,16 +31,16 @@ This MVP does **not** yet benchmark prompt quality, repo-editing quality, or orc
 
 - **Agents:** `omc`, `omx`
 - **Suite:** `runtime`
-- **Commands:** `run`, `list`, `doctor`
-- **Artifacts:** `manifest.json` + per-agent `runtime.json`
+- **Commands:** `run`, `list`, `doctor`, `report`
+- **Artifacts:** `manifest.json`, per-agent `runtime.json`, and static `report.html`
 
 ### Not implemented yet
 
 - `omo`
 - task-completion benchmarks
 - orchestration benchmarks
-- `report` / `compare`
-- HTML / Markdown leaderboard generation
+- `compare`
+- richer leaderboard/report variants beyond the current static HTML report
 - LLM-judge scoring
 - Docker isolation
 
@@ -55,6 +55,7 @@ What is already true:
 - local runtime benchmarking works for `omc`
 - local runtime benchmarking works for `omx`
 - results are persisted under timestamped run directories
+- static HTML reports can be generated from saved runtime runs
 - tests and smoke checks run without requiring live external accounts
 
 What is next:
@@ -67,14 +68,18 @@ What is next:
 
 ---
 
-## Latest Local Runtime Snapshot — 2026-04-06
+## Latest Published Runtime Snapshot — 2026-04-07
+
+Published report:
+
+- `https://devswha.github.io/OpenBench/`
 
 These are **local validation snapshots from this machine**, not broad public benchmark claims.
 
 | Agent | Startup (`--version`) | Peak memory | Binary path size |
 |------|------------------------|-------------|------------------|
-| `omc` | 130.58 ms | 191.92 MB | 49 bytes* |
-| `omx` | 160.81 ms | 62.37 MB | 47 bytes* |
+| `omc` | 127.35 ms | 192.38 MB | 49 bytes* |
+| `omx` | 162.13 ms | 61.99 MB | 47 bytes* |
 
 \* Current MVP measures the resolved command path size (`du -sb $(which <command>)`), which may reflect a launcher/wrapper rather than total installation footprint.
 
@@ -96,6 +101,10 @@ The runtime suite currently uses three deterministic checks:
 
 So the MVP currently measures **CLI launch/runtime overhead**, not full task-solving performance.
 
+Saved runtime runs can also be turned into a static report with:
+
+- **report** — `openbench report --format html --input <run-dir>`
+
 ---
 
 ## Result Format
@@ -106,6 +115,7 @@ Each run writes a timestamped directory like:
 results/
 └── 2026-04-06T08-13-09-506228Z/
     ├── manifest.json
+    ├── report.html
     ├── omc/
     │   └── runtime.json
     └── omx/
@@ -152,6 +162,7 @@ uv run --python 3.11 python -m openbench.cli list suites
 
 uv run --python 3.11 python -m openbench.cli run --agent omc --suite runtime
 uv run --python 3.11 python -m openbench.cli run --agent omx --suite runtime
+uv run --python 3.11 python -m openbench.cli report --format html --input ./results/<run-id>
 ```
 
 If you prefer the installed console script:
@@ -162,6 +173,7 @@ openbench list agents
 openbench list suites
 openbench run --agent omc --suite runtime
 openbench run --agent omx --suite runtime
+openbench report --format html --input ./results/<run-id>
 ```
 
 ---
@@ -192,6 +204,14 @@ Runs one agent against one suite:
 
 ```bash
 openbench run --agent omc --suite runtime --results-dir ./results
+```
+
+### `report`
+
+Generates a static HTML report from a saved runtime run:
+
+```bash
+openbench report --format html --input ./results/<run-id> --output ./results/<run-id>/report.html
 ```
 
 ---

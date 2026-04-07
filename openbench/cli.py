@@ -5,6 +5,7 @@ from pathlib import Path
 import click
 
 from openbench.config import load_config
+from openbench.reporters import ReportInputError, StaticHtmlReporter, parse_runtime_report
 from openbench.registry import AGENT_REGISTRY, SUITE_REGISTRY, list_agents, list_suites
 from openbench.runner import Runner
 
@@ -73,6 +74,26 @@ def run(agent_name: str, suite_name: str, config_path: Path | None, results_dir:
         raise SystemExit(1)
 
     click.echo("Run completed successfully.")
+
+
+@main.command()
+@click.option("--format", "report_format", type=click.Choice(["html"]), default="html", show_default=True)
+@click.option("--input", "input_dir", type=click.Path(path_type=Path, file_okay=False), required=True)
+@click.option("--output", "output_path", type=click.Path(path_type=Path, dir_okay=False), default=None)
+def report(report_format: str, input_dir: Path, output_path: Path | None) -> None:
+    """Generate a static report from a saved runtime run directory."""
+    try:
+        parsed_run = parse_runtime_report(input_dir)
+    except ReportInputError as exc:
+        raise click.ClickException(str(exc)) from exc
+
+    destination = output_path or input_dir / f"report.{report_format}"
+    reporter_factories = {
+        "html": StaticHtmlReporter,
+    }
+    reporter_factory = reporter_factories[report_format]
+    reporter_factory().write(parsed_run.report, destination)
+    click.echo(f"Report written: {destination}")
 
 
 if __name__ == "__main__":

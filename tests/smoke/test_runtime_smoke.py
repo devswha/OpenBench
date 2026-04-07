@@ -13,7 +13,7 @@ def test_readme_quickstart_matches_cli_surface() -> None:
     assert "openbench list suites" in readme
     assert "openbench run --agent omc --suite runtime" in readme
     assert "openbench run --agent omx --suite runtime" in readme
-    assert "openbench report" not in readme
+    assert "openbench report --format html" in readme
 
 
 def test_runtime_smoke(shim_env, tmp_path) -> None:

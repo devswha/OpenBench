@@ -1,0 +1,28 @@
+{
+  "agents": {
+    "omc": {
+      "command": "claude",
+      "version": "2.1.92 (Claude Code)"
+    },
+    "omx": {
+      "command": "omx",
+      "version": "oh-my-codex v0.11.13"
+    }
+  },
+  "environment": {
+    "cpu": "x86_64",
+    "memory_gb": 62.72,
+    "os": "Linux-6.8.0-106-generic-x86_64-with-glibc2.35",
+    "python": "3.11.15"
+  },
+  "normalization_references": {
+    "binary_size_mb": 100.0,
+    "memory_mb": 512.0,
+    "startup_ms": 1000.0
+  },
+  "suites": [
+    "runtime"
+  ],
+  "timestamp": "2026-04-07T07:01:39.737731+00:00",
+  "version": "1.0"
+}
