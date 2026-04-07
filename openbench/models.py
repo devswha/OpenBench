@@ -9,6 +9,7 @@ from typing import Any
 class RunStatus(str, Enum):
     SUCCESS = "success"
     FAILED = "failed"
+    REGRESSION = "regression"
     TIMEOUT = "timeout"
     OOM = "oom"
     CRASH = "crash"

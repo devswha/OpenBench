@@ -1,8 +1,18 @@
 #!/usr/bin/env python3
+from pathlib import Path
 import sys
+
+from agent_task_logic import apply_task, extract_task_id
 
 if "--version" in sys.argv:
     print("claude 0.0-test")
+    raise SystemExit(0)
+
+prompt = sys.argv[-1] if len(sys.argv) > 1 else ""
+task_id = extract_task_id(prompt)
+if task_id:
+    apply_task(task_id, Path.cwd())
+    print(f"applied task {task_id}")
     raise SystemExit(0)
 
 print("fake claude invocation")

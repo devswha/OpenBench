@@ -30,6 +30,7 @@ def test_report_smoke(tmp_path) -> None:
 
     assert completed.returncode == 0, completed.stdout + completed.stderr
     html = output_path.read_text()
-    assert "OpenBench Runtime Report" in html
+    assert "OpenBench Benchmark Report" in html
     assert "omc" in html
     assert "omx" in html
+    assert "Practical task summary" in html

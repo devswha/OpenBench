@@ -30,7 +30,7 @@ This MVP does **not** yet benchmark prompt quality, repo-editing quality, or orc
 ### Implemented now
 
 - **Agents:** `omc`, `omx`
-- **Suite:** `runtime`
+- **Suites:** `runtime`, `practical`
 - **Commands:** `run`, `list`, `doctor`, `report`
 - **Artifacts:** `manifest.json`, per-agent `runtime.json`, and static `report.html`
 
@@ -54,6 +54,7 @@ What is already true:
 
 - local runtime benchmarking works for `omc`
 - local runtime benchmarking works for `omx`
+- a deterministic practical coding task suite can run from frozen fixtures
 - results are persisted under timestamped run directories
 - static HTML reports can be generated from saved runtime runs
 - tests and smoke checks run without requiring live external accounts
@@ -104,6 +105,14 @@ So the MVP currently measures **CLI launch/runtime overhead**, not full task-sol
 Saved runtime runs can also be turned into a static report with:
 
 - **report** — `openbench report --format html --input <run-dir>`
+
+OpenBench also includes a **small deterministic practical coding task suite** for bounded code-editing tasks such as:
+
+- single-file bug fixes
+- failing unit-test repair
+- config/schema migration
+- multi-file import/rename repair
+- validation/error-handling patch
 
 ---
 
@@ -162,6 +171,7 @@ uv run --python 3.11 python -m openbench.cli list suites
 
 uv run --python 3.11 python -m openbench.cli run --agent omc --suite runtime
 uv run --python 3.11 python -m openbench.cli run --agent omx --suite runtime
+uv run --python 3.11 python -m openbench.cli run --agent omc --suite practical
 uv run --python 3.11 python -m openbench.cli report --format html --input ./results/<run-id>
 ```
 
@@ -173,6 +183,7 @@ openbench list agents
 openbench list suites
 openbench run --agent omc --suite runtime
 openbench run --agent omx --suite runtime
+openbench run --agent omc --suite practical
 openbench report --format html --input ./results/<run-id>
 ```
 

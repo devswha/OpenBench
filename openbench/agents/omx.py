@@ -12,3 +12,13 @@ class OMXAgent(RuntimeCommandAgent):
 
     def __init__(self, command: str | None = None) -> None:
         super().__init__(command=command or os.environ.get("OPENBENCH_OMX_COMMAND", self.command))
+
+    def build_practical_command(self, resolved_command: str, task) -> list[str]:
+        return [
+            resolved_command,
+            "exec",
+            "--dangerously-bypass-approvals-and-sandbox",
+            "-C",
+            str(task.workspace),
+            task.prompt,
+        ]

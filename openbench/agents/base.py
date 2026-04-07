@@ -1,12 +1,13 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
+import hashlib
 import os
 from pathlib import Path
 import shutil
+import subprocess
 
-from openbench.models import DoctorCheck, RunResult, Task
-from openbench.models import RunStatus
+from openbench.models import DoctorCheck, RunResult, RunStatus, Task
 from openbench.suites.runtime.measurements import measure_binary_size, measure_memory, measure_startup
 from openbench.utils.process import combine_output, run_subprocess
 
@@ -66,14 +67,15 @@ class AgentAdapter(ABC):
 
 class RuntimeCommandAgent(AgentAdapter):
     def run(self, task: Task) -> RunResult:
+        task_kind = str(task.metadata.get("task_kind", "runtime"))
+        if task_kind == "practical":
+            return self.run_practical_task(task)
+
         resolved_command = self.resolve_command()
         if resolved_command is None:
-            return RunResult(
-                task=task,
-                status=RunStatus.SETUP_ERROR,
-                output="",
-                error_message=f"Agent command '{self.command}' is not available",
-                raw={"metric": task.metadata.get("metric"), "available": False},
+            return self._missing_command_result(
+                task,
+                {"metric": task.metadata.get("metric"), "available": False},
             )
 
         metric = task.metadata.get("metric")
@@ -101,4 +103,71 @@ class RuntimeCommandAgent(AgentAdapter):
             exit_code=measurement.exit_code,
             error_message=measurement.error_message,
             raw=measurement.raw,
+        )
+
+    def build_practical_command(self, resolved_command: str, task: Task) -> list[str]:
+        raise NotImplementedError
+
+    def run_practical_task(self, task: Task) -> RunResult:
+        resolved_command = self.resolve_command()
+        if resolved_command is None:
+            return self._missing_command_result(task, {"task_kind": "practical", "available": False})
+
+        before = self._snapshot_workspace(task.workspace)
+        try:
+            completed = run_subprocess(
+                self.build_practical_command(resolved_command, task),
+                timeout=task.timeout,
+                cwd=task.workspace,
+            )
+        except subprocess.TimeoutExpired:
+            after = self._snapshot_workspace(task.workspace)
+            return RunResult(
+                task=task,
+                status=RunStatus.TIMEOUT,
+                output="",
+                duration_ms=task.timeout * 1000,
+                error_message=f"Task timed out after {task.timeout}s",
+                files_changed=self._diff_workspace(before, after),
+                raw={"task_kind": "practical", "available": False},
+            )
+
+        after = self._snapshot_workspace(task.workspace)
+        status = RunStatus.SUCCESS if completed.returncode == 0 else RunStatus.FAILED
+        return RunResult(
+            task=task,
+            status=status,
+            output=combine_output(completed),
+            exit_code=completed.returncode,
+            error_message=None if completed.returncode == 0 else "Agent command failed",
+            files_changed=self._diff_workspace(before, after),
+            raw={"task_kind": "practical", "available": True},
+        )
+
+    def _snapshot_workspace(self, workspace: Path) -> dict[str, str]:
+        snapshot: dict[str, str] = {}
+        for path in workspace.rglob("*"):
+            if not path.is_file():
+                continue
+            if any(part in {"__pycache__", ".pytest_cache"} for part in path.parts):
+                continue
+            relative = path.relative_to(workspace).as_posix()
+            digest = hashlib.sha256(path.read_bytes()).hexdigest()
+            snapshot[relative] = digest
+        return snapshot
+
+    def _diff_workspace(self, before: dict[str, str], after: dict[str, str]) -> list[str]:
+        changed = []
+        for relative in sorted(set(before) | set(after)):
+            if before.get(relative) != after.get(relative):
+                changed.append(relative)
+        return changed
+
+    def _missing_command_result(self, task: Task, raw: dict[str, object]) -> RunResult:
+        return RunResult(
+            task=task,
+            status=RunStatus.SETUP_ERROR,
+            output="",
+            error_message=f"Agent command '{self.command}' is not available",
+            raw=raw,
         )

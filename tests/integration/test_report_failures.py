@@ -16,3 +16,5 @@ def test_report_renders_failure_states(tmp_path) -> None:
     assert "GNU time is not available" in html
     assert "SETUP_ERROR" in html
     assert "Unavailable" in html
+    assert "touched disallowed file" in html
+    assert "Touchpoint violations" in html

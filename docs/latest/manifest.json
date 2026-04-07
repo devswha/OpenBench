@@ -21,8 +21,9 @@
     "startup_ms": 1000.0
   },
   "suites": [
-    "runtime"
+    "runtime",
+    "practical"
   ],
-  "timestamp": "2026-04-07T07:01:39.737731+00:00",
+  "timestamp": "2026-04-07T08:37:41.963796+00:00",
   "version": "1.0"
 }

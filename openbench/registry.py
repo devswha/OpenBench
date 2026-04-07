@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from openbench.agents.omc import OMCAgent
 from openbench.agents.omx import OMXAgent
+from openbench.suites.practical.suite import PracticalTaskSuite
 from openbench.suites.runtime.suite import RuntimeSuite
 
 
@@ -11,6 +12,7 @@ AGENT_REGISTRY = {
 }
 
 SUITE_REGISTRY = {
+    PracticalTaskSuite.name: PracticalTaskSuite,
     RuntimeSuite.name: RuntimeSuite,
 }
 

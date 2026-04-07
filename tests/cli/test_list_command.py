@@ -18,3 +18,4 @@ def test_list_suites_shows_runtime() -> None:
 
     assert result.exit_code == 0
     assert "runtime" in result.output
+    assert "practical" in result.output

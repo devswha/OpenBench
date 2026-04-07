@@ -26,9 +26,10 @@ class Runner:
         scores = []
         workspace_manager = TempWorkspaceManager()
         try:
-            with workspace_manager.workspace() as workspace:
-                for task in suite.load_tasks():
+            for task in suite.load_tasks():
+                with workspace_manager.workspace() as workspace:
                     task.workspace = workspace
+                    task = suite.prepare_task(task, workspace)
                     result = agent.run(task)
                     scores.append(suite.evaluate(result, agent_name))
         finally:

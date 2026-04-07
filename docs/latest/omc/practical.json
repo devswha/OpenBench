@@ -1,0 +1,144 @@
+{
+  "agent": "omc",
+  "generated_at": "2026-04-07T08:37:49.013330+00:00",
+  "suite": "practical",
+  "summary": {
+    "failed_tasks": 0,
+    "successful_tasks": 5,
+    "task_count": 5
+  },
+  "tasks": [
+    {
+      "agent_name": "omc",
+      "raw": {
+        "agent_output": "applied task single-file-bug-fix",
+        "allowed_touchpoints": [
+          "calculator.py"
+        ],
+        "changed_files": [
+          "calculator.py"
+        ],
+        "classification": "pass",
+        "description": "Fix the single-file arithmetic bug so the calculator tests pass.",
+        "regression_command": "python -m pytest -q",
+        "regression_command_exit_code": 0,
+        "regression_command_output": "..                                                                       [100%]\n2 passed in 0.02s",
+        "success_command": "python -m pytest -q tests/test_calculator.py",
+        "success_command_exit_code": 0,
+        "success_command_output": "..                                                                       [100%]\n2 passed in 0.02s",
+        "task_kind": "practical",
+        "touchpoint_violations": []
+      },
+      "status": "success",
+      "task_name": "single-file-bug-fix",
+      "tier": 1,
+      "value": 100.0
+    },
+    {
+      "agent_name": "omc",
+      "raw": {
+        "agent_output": "applied task failing-unit-test-repair",
+        "allowed_touchpoints": [
+          "text_utils.py"
+        ],
+        "changed_files": [
+          "text_utils.py"
+        ],
+        "classification": "pass",
+        "description": "Repair the slugify implementation so the failing unit tests pass.",
+        "regression_command": "python -m pytest -q",
+        "regression_command_exit_code": 0,
+        "regression_command_output": "..                                                                       [100%]\n2 passed in 0.01s",
+        "success_command": "python -m pytest -q tests/test_text_utils.py",
+        "success_command_exit_code": 0,
+        "success_command_output": "..                                                                       [100%]\n2 passed in 0.02s",
+        "task_kind": "practical",
+        "touchpoint_violations": []
+      },
+      "status": "success",
+      "task_name": "failing-unit-test-repair",
+      "tier": 1,
+      "value": 100.0
+    },
+    {
+      "agent_name": "omc",
+      "raw": {
+        "agent_output": "applied task config-schema-migration",
+        "allowed_touchpoints": [
+          "config_loader.py"
+        ],
+        "changed_files": [
+          "config_loader.py"
+        ],
+        "classification": "pass",
+        "description": "Migrate timeout loading to support the new schema while preserving backward compatibility.",
+        "regression_command": "python -m pytest -q",
+        "regression_command_exit_code": 0,
+        "regression_command_output": "..                                                                       [100%]\n2 passed in 0.01s",
+        "success_command": "python -m pytest -q tests/test_config_loader.py",
+        "success_command_exit_code": 0,
+        "success_command_output": "..                                                                       [100%]\n2 passed in 0.01s",
+        "task_kind": "practical",
+        "touchpoint_violations": []
+      },
+      "status": "success",
+      "task_name": "config-schema-migration",
+      "tier": 1,
+      "value": 100.0
+    },
+    {
+      "agent_name": "omc",
+      "raw": {
+        "agent_output": "applied task multi-file-import-repair",
+        "allowed_touchpoints": [
+          "app.py",
+          "report.py"
+        ],
+        "changed_files": [
+          "app.py",
+          "report.py"
+        ],
+        "classification": "pass",
+        "description": "Repair the broken imports after the math_ops module was moved.",
+        "regression_command": "python -m pytest -q",
+        "regression_command_exit_code": 0,
+        "regression_command_output": "..                                                                       [100%]\n2 passed in 0.02s",
+        "success_command": "python -m pytest -q tests/test_app.py",
+        "success_command_exit_code": 0,
+        "success_command_output": "..                                                                       [100%]\n2 passed in 0.04s",
+        "task_kind": "practical",
+        "touchpoint_violations": []
+      },
+      "status": "success",
+      "task_name": "multi-file-import-repair",
+      "tier": 1,
+      "value": 100.0
+    },
+    {
+      "agent_name": "omc",
+      "raw": {
+        "agent_output": "applied task validation-error-handling-patch",
+        "allowed_touchpoints": [
+          "user_service.py"
+        ],
+        "changed_files": [
+          "user_service.py"
+        ],
+        "classification": "pass",
+        "description": "Add the missing email validation and trimming behavior.",
+        "regression_command": "python -m pytest -q",
+        "regression_command_exit_code": 0,
+        "regression_command_output": "..                                                                       [100%]\n2 passed in 0.01s",
+        "success_command": "python -m pytest -q tests/test_user_service.py",
+        "success_command_exit_code": 0,
+        "success_command_output": "..                                                                       [100%]\n2 passed in 0.02s",
+        "task_kind": "practical",
+        "touchpoint_violations": []
+      },
+      "status": "success",
+      "task_name": "validation-error-handling-patch",
+      "tier": 1,
+      "value": 100.0
+    }
+  ]
+}

@@ -84,9 +84,37 @@ class AgentReport:
 
 
 @dataclass(slots=True)
+class PracticalTaskResult:
+    task_name: str
+    description: str
+    status: str
+    classification: str
+    score: float | None
+    changed_files: list[str] = field(default_factory=list)
+    touchpoint_violations: list[str] = field(default_factory=list)
+    error_message: str | None = None
+
+    @property
+    def formatted_score(self) -> str:
+        if self.score is None:
+            return "—"
+        return f"{self.score:.2f}"
+
+
+@dataclass(slots=True)
+class PracticalAgentReport:
+    agent_name: str
+    display_name: str
+    summary: dict[str, int]
+    tasks: list[PracticalTaskResult] = field(default_factory=list)
+
+
+@dataclass(slots=True)
 class RuntimeReport:
     run_id: str
     suite: str
     timestamp: str
     environment: dict[str, str | int | float]
+    suites: list[str] = field(default_factory=list)
     agents: list[AgentReport] = field(default_factory=list)
+    practical_agents: list[PracticalAgentReport] = field(default_factory=list)

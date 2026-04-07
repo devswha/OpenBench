@@ -3,34 +3,43 @@ from __future__ import annotations
 from html import escape
 from pathlib import Path
 
-from openbench.reporters.models import AgentReport, ReportMetric, RuntimeReport, RUNTIME_METRICS
+from openbench.reporters.models import (
+    AgentReport,
+    PracticalAgentReport,
+    PracticalTaskResult,
+    ReportMetric,
+    RuntimeReport,
+    RUNTIME_METRICS,
+)
 
 
 class StaticHtmlReporter:
     def render(self, report: RuntimeReport) -> str:
-        # Overview tab content
         summary_cards = self._render_summary_cards(report)
         environment_rows = "".join(
             f"<tr><th>{escape(str(key))}</th><td>{escape(str(value))}</td></tr>"
             for key, value in sorted(report.environment.items())
         )
-        comparison_rows = "".join(self._render_comparison_row(agent_report) for agent_report in report.agents)
-        agent_cards = "".join(self._render_agent_card(agent_report) for agent_report in report.agents)
-
-        # Per-metric tab content
+        runtime_comparison_rows = "".join(self._render_runtime_comparison_row(agent) for agent in report.agents)
+        runtime_agent_cards = "".join(self._render_runtime_agent_card(agent) for agent in report.agents)
+        practical_summary_rows = "".join(
+            self._render_practical_summary_row(agent) for agent in report.practical_agents
+        )
+        practical_agent_cards = "".join(
+            self._render_practical_agent_card(agent) for agent in report.practical_agents
+        )
         metric_tab_panels = "".join(
             self._render_metric_tab_panel(report, metric) for metric in RUNTIME_METRICS
         )
-
-        # Tab bar buttons
-        tab_buttons = self._render_tab_buttons()
+        practical_panel = self._render_practical_tab_panel(report)
+        tab_buttons = self._render_tab_buttons(report)
 
         return f"""<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>OpenBench Runtime Report — {escape(report.run_id)}</title>
+  <title>OpenBench Benchmark Report — {escape(report.run_id)}</title>
   <style>
     :root {{
       color-scheme: light dark;
@@ -44,9 +53,7 @@ class StaticHtmlReporter:
       --warn: #f59e0b;
       --fail: #ef4444;
     }}
-    *, *::before, *::after {{
-      box-sizing: border-box;
-    }}
+    *, *::before, *::after {{ box-sizing: border-box; }}
     body {{
       margin: 0;
       font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
@@ -55,26 +62,15 @@ class StaticHtmlReporter:
       line-height: 1.5;
     }}
     main {{
-      max-width: 1100px;
+      max-width: 1120px;
       margin: 0 auto;
       padding: 32px 20px 64px;
     }}
-    h1, h2, h3 {{
-      margin: 0 0 12px;
-    }}
-    p, li {{
-      color: var(--muted);
-    }}
-    .grid {{
-      display: grid;
-      gap: 16px;
-    }}
-    .summary-grid {{
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-    }}
-    .agent-grid {{
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    }}
+    h1, h2, h3, h4 {{ margin: 0 0 12px; }}
+    p, li {{ color: var(--muted); }}
+    .grid {{ display: grid; gap: 16px; }}
+    .summary-grid {{ grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }}
+    .agent-grid {{ grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); }}
     .card {{
       background: var(--panel);
       border: 1px solid var(--border);
@@ -82,28 +78,16 @@ class StaticHtmlReporter:
       padding: 18px;
       box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
     }}
-    table {{
-      width: 100%;
-      border-collapse: collapse;
-    }}
+    table {{ width: 100%; border-collapse: collapse; }}
     th, td {{
       text-align: left;
       padding: 10px 12px;
       border-bottom: 1px solid var(--border);
       vertical-align: top;
     }}
-    .metric-list {{
-      list-style: none;
-      padding: 0;
-      margin: 0;
-    }}
-    .metric-list li {{
-      margin-bottom: 10px;
-    }}
-    .metric-label {{
-      color: var(--text);
-      font-weight: 600;
-    }}
+    .metric-list, .task-list {{ list-style: none; padding: 0; margin: 0; }}
+    .metric-list li, .task-list li {{ margin-bottom: 10px; }}
+    .metric-label, .task-label {{ color: var(--text); font-weight: 600; }}
     .chip {{
       display: inline-block;
       padding: 2px 8px;
@@ -114,6 +98,7 @@ class StaticHtmlReporter:
     }}
     .chip-ok {{ background: rgba(33, 197, 93, 0.18); color: #7bed9f; }}
     .chip-fail {{ background: rgba(239, 68, 68, 0.18); color: #fda4af; }}
+    .chip-warn {{ background: rgba(245, 158, 11, 0.18); color: #fde68a; }}
     .bar-track {{
       width: 100%;
       background: rgba(255, 255, 255, 0.06);
@@ -127,15 +112,8 @@ class StaticHtmlReporter:
       border-radius: 999px;
       background: linear-gradient(90deg, #3b82f6, #61dafb);
     }}
-    .note {{
-      font-size: 14px;
-      color: var(--muted);
-    }}
-    .failure {{
-      color: #fecaca;
-    }}
-
-    /* ── Tab navigation ── */
+    .note {{ font-size: 14px; color: var(--muted); }}
+    .failure {{ color: #fecaca; }}
     .tab-nav {{
       display: flex;
       gap: 4px;
@@ -147,9 +125,7 @@ class StaticHtmlReporter:
       overflow-x: auto;
       scrollbar-width: none;
     }}
-    .tab-nav::-webkit-scrollbar {{
-      display: none;
-    }}
+    .tab-nav::-webkit-scrollbar {{ display: none; }}
     .tab-btn {{
       flex-shrink: 0;
       padding: 8px 20px;
@@ -164,32 +140,11 @@ class StaticHtmlReporter:
       white-space: nowrap;
       font-family: inherit;
     }}
-    .tab-btn:hover {{
-      background: rgba(97, 218, 251, 0.08);
-      color: var(--text);
-    }}
-    .tab-btn.active {{
-      background: rgba(97, 218, 251, 0.14);
-      color: var(--accent);
-      font-weight: 600;
-    }}
-
-    /* ── Tab panels ── */
-    .tab-panel {{
-      display: none;
-    }}
-    .tab-panel.active {{
-      display: block;
-    }}
-
-    /* ── Metric description card ── */
-    .metric-description {{
-      font-size: 14px;
-      line-height: 1.6;
-      margin: 0;
-    }}
-
-    /* ── Per-agent detail table in metric tab ── */
+    .tab-btn:hover {{ background: rgba(97, 218, 251, 0.08); color: var(--text); }}
+    .tab-btn.active {{ background: rgba(97, 218, 251, 0.14); color: var(--accent); font-weight: 600; }}
+    .tab-panel {{ display: none; }}
+    .tab-panel.active {{ display: block; }}
+    .metric-description {{ font-size: 14px; line-height: 1.6; margin: 0; }}
     .metric-detail-grid {{
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
@@ -202,10 +157,6 @@ class StaticHtmlReporter:
       border-radius: 14px;
       padding: 16px;
     }}
-    .metric-detail-card h4 {{
-      margin: 0 0 8px;
-      font-size: 15px;
-    }}
     .metric-detail-row {{
       display: flex;
       justify-content: space-between;
@@ -214,26 +165,13 @@ class StaticHtmlReporter:
       border-bottom: 1px solid var(--border);
       font-size: 13px;
     }}
-    .metric-detail-row:last-child {{
-      border-bottom: none;
-    }}
-    .metric-detail-key {{
-      color: var(--muted);
-    }}
-    .metric-detail-val {{
-      color: var(--text);
-      font-weight: 600;
-      font-variant-numeric: tabular-nums;
-    }}
-
+    .metric-detail-row:last-child {{ border-bottom: none; }}
+    .metric-detail-key {{ color: var(--muted); }}
+    .metric-detail-val {{ color: var(--text); font-weight: 600; font-variant-numeric: tabular-nums; }}
+    code {{ color: #c4b5fd; }}
     @media (max-width: 600px) {{
-      .tab-btn {{
-        padding: 7px 14px;
-        font-size: 13px;
-      }}
-      main {{
-        padding: 20px 12px 48px;
-      }}
+      .tab-btn {{ padding: 7px 14px; font-size: 13px; }}
+      main {{ padding: 20px 12px 48px; }}
     }}
   </style>
 </head>
@@ -250,36 +188,11 @@ class StaticHtmlReporter:
 
       <section class="card" style="margin-top: 20px;">
         <h2>Environment</h2>
-        <table>
-          <tbody>
-            {environment_rows}
-          </tbody>
-        </table>
+        <table><tbody>{environment_rows}</tbody></table>
       </section>
 
-      <section class="card" style="margin-top: 20px;">
-        <h2>Comparison table</h2>
-        <table>
-          <thead>
-            <tr>
-              <th>Agent</th>
-              <th>Startup</th>
-              <th>Memory</th>
-              <th>Binary size</th>
-            </tr>
-          </thead>
-          <tbody>
-            {comparison_rows}
-          </tbody>
-        </table>
-      </section>
-
-      <section style="margin-top: 20px;">
-        <h2>Agent cards</h2>
-        <div class="grid agent-grid">
-          {agent_cards}
-        </div>
-      </section>
+      {self._render_runtime_overview(report, runtime_comparison_rows, runtime_agent_cards)}
+      {self._render_practical_overview(report, practical_summary_rows, practical_agent_cards)}
 
       <section class="card" style="margin-top: 20px;">
         <h2>Notes</h2>
@@ -292,12 +205,12 @@ class StaticHtmlReporter:
     </div>
 
     {metric_tab_panels}
+    {practical_panel}
   </main>
 
   <script>
     (function () {{
       var TABS = Array.from(document.querySelectorAll('.tab-btn')).map(function (b) {{ return b.dataset.tab; }});
-
       function activate(tabId) {{
         document.querySelectorAll('.tab-btn').forEach(function (btn) {{
           btn.classList.toggle('active', btn.dataset.tab === tabId);
@@ -307,12 +220,10 @@ class StaticHtmlReporter:
           panel.classList.toggle('active', panel.id === 'tab-' + tabId);
         }});
       }}
-
       function getActiveFromHash() {{
         var hash = window.location.hash.replace('#', '');
         return TABS.indexOf(hash) !== -1 ? hash : 'overview';
       }}
-
       document.querySelectorAll('.tab-btn').forEach(function (btn) {{
         btn.addEventListener('click', function () {{
           var tabId = btn.dataset.tab;
@@ -320,11 +231,7 @@ class StaticHtmlReporter:
           activate(tabId);
         }});
       }});
-
-      window.addEventListener('hashchange', function () {{
-        activate(getActiveFromHash());
-      }});
-
+      window.addEventListener('hashchange', function () {{ activate(getActiveFromHash()); }});
       activate(getActiveFromHash());
     }})();
   </script>
@@ -337,55 +244,113 @@ class StaticHtmlReporter:
         output_path.write_text(self.render(report))
         return output_path
 
-    def _render_tab_buttons(self) -> str:
-        tabs = [("overview", "Overview")] + [
-            (metric.key.replace("_", "-"), metric.label) for metric in RUNTIME_METRICS
-        ]
-        buttons = []
-        for tab_id, tab_label in tabs:
-            buttons.append(
-                f'<button class="tab-btn" id="btn-{escape(tab_id)}" role="tab" '
-                f'data-tab="{escape(tab_id)}" aria-selected="false" '
-                f'aria-controls="tab-{escape(tab_id)}">{escape(tab_label)}</button>'
-            )
-        return "\n      ".join(buttons)
+    def _render_tab_buttons(self, report: RuntimeReport) -> str:
+        tabs = [("overview", "Overview")]
+        if report.agents:
+            tabs.extend((metric.key.replace("_", "-"), metric.label) for metric in RUNTIME_METRICS)
+        if report.practical_agents:
+            tabs.append(("practical", "Practical"))
+        return "\n      ".join(
+            f'<button class="tab-btn" id="btn-{escape(tab_id)}" role="tab" '
+            f'data-tab="{escape(tab_id)}" aria-selected="false" '
+            f'aria-controls="tab-{escape(tab_id)}">{escape(tab_label)}</button>'
+            for tab_id, tab_label in tabs
+        )
 
     def _render_summary_cards(self, report: RuntimeReport) -> str:
+        suite_text = ", ".join(report.suites) if report.suites else report.suite
+        total_agents = sorted({a.agent_name for a in report.agents} | {a.agent_name for a in report.practical_agents})
+        practical_task_count = sum(agent.summary.get("task_count", 0) for agent in report.practical_agents)
         return f"""<article class="card">
-        <h1>OpenBench Runtime Report</h1>
+        <h1>OpenBench Benchmark Report</h1>
         <p>Run ID: <strong>{escape(report.run_id)}</strong></p>
       </article>
       <article class="card">
-        <h2>Suite</h2>
-        <p><strong>{escape(report.suite)}</strong></p>
+        <h2>Suites</h2>
+        <p><strong>{escape(suite_text)}</strong></p>
       </article>
       <article class="card">
         <h2>Agents</h2>
-        <p><strong>{len(report.agents)}</strong></p>
+        <p><strong>{len(total_agents)}</strong></p>
+      </article>
+      <article class="card">
+        <h2>Practical tasks</h2>
+        <p><strong>{practical_task_count}</strong></p>
       </article>
       <article class="card">
         <h2>Timestamp</h2>
         <p><strong>{escape(report.timestamp)}</strong></p>
       </article>"""
 
-    def _render_agent_card(self, agent_report: AgentReport) -> str:
+    def _render_runtime_overview(self, report: RuntimeReport, comparison_rows: str, agent_cards: str) -> str:
+        if not report.agents:
+            return ""
+        return f"""
+      <section class="card" style="margin-top: 20px;">
+        <h2>Runtime comparison</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Agent</th>
+              <th>Startup</th>
+              <th>Memory</th>
+              <th>Binary size</th>
+            </tr>
+          </thead>
+          <tbody>{comparison_rows}</tbody>
+        </table>
+      </section>
+
+      <section style="margin-top: 20px;">
+        <h2>Runtime agent cards</h2>
+        <div class="grid agent-grid">{agent_cards}</div>
+      </section>
+"""
+
+    def _render_practical_overview(
+        self,
+        report: RuntimeReport,
+        summary_rows: str,
+        agent_cards: str,
+    ) -> str:
+        if not report.practical_agents:
+            return ""
+        return f"""
+      <section class="card" style="margin-top: 20px;">
+        <h2>Practical task summary</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Agent</th>
+              <th>Successful tasks</th>
+              <th>Failed tasks</th>
+              <th>Total tasks</th>
+            </tr>
+          </thead>
+          <tbody>{summary_rows}</tbody>
+        </table>
+      </section>
+
+      <section style="margin-top: 20px;">
+        <h2>Practical task cards</h2>
+        <div class="grid agent-grid">{agent_cards}</div>
+      </section>
+"""
+
+    def _render_runtime_agent_card(self, agent_report: AgentReport) -> str:
         metrics = "".join(self._render_metric_list_item(metric) for metric in agent_report.metrics)
         return f"""
 <article class="card">
   <h3>{escape(agent_report.display_name)}</h3>
   <p>{escape(agent_report.agent_name)}</p>
-  <ul class="metric-list">
-    {metrics}
-  </ul>
+  <ul class="metric-list">{metrics}</ul>
 </article>
 """
 
     def _render_metric_list_item(self, metric: ReportMetric) -> str:
         status_class = "chip-ok" if metric.available and metric.status == "success" else "chip-fail"
         status_text = "OK" if metric.available and metric.status == "success" else metric.status.upper()
-        detail_html = ""
-        if metric.error_message:
-            detail_html = f'<div class="failure">Error: {escape(metric.error_message)}</div>'
+        detail_html = f'<div class="failure">Error: {escape(metric.error_message)}</div>' if metric.error_message else ""
         return f"""
 <li>
   <span class="metric-label">{escape(metric.label)}</span>
@@ -396,7 +361,7 @@ class StaticHtmlReporter:
 </li>
 """
 
-    def _render_comparison_row(self, agent_report: AgentReport) -> str:
+    def _render_runtime_comparison_row(self, agent_report: AgentReport) -> str:
         metrics = {metric.key: metric for metric in agent_report.metrics}
         return f"""
 <tr>
@@ -414,37 +379,13 @@ class StaticHtmlReporter:
         return escape(text)
 
     def _render_metric_tab_panel(self, report: RuntimeReport, metric_spec) -> str:
-        tab_id = metric_spec.key.replace("_", "-")
-        bars = self._render_metric_bars(report, metric_spec.key)
-        agent_details = "".join(
-            self._render_metric_agent_detail(agent_report, metric_spec.key)
-            for agent_report in report.agents
-        )
-        description_html = ""
-        if metric_spec.description:
-            description_html = f"""
-      <article class="card" style="margin-bottom: 16px;">
-        <p class="metric-description">{escape(metric_spec.description)}</p>
-      </article>"""
-
-        return f"""
-    <div id="tab-{escape(tab_id)}" class="tab-panel" role="tabpanel" aria-labelledby="btn-{escape(tab_id)}">
-      {description_html}
-      <article class="card">
-        <h2>{escape(metric_spec.label)}</h2>
-        {bars}
-      </article>
-
-      <div class="metric-detail-grid">
-        {agent_details}
-      </div>
-    </div>
-"""
-
-    def _render_metric_bars(self, report: RuntimeReport, metric_key: str) -> str:
+        if not report.agents:
+            return ""
+        metric_id = metric_spec.key.replace("_", "-")
         bars = []
+        detail_cards = []
         for agent_report in report.agents:
-            metric = next(m for m in agent_report.metrics if m.key == metric_key)
+            metric = next(metric for metric in agent_report.metrics if metric.key == metric_spec.key)
             width = max(0.0, min(metric.normalized_score or 0.0, 100.0))
             bars.append(
                 f"""
@@ -454,20 +395,20 @@ class StaticHtmlReporter:
 </div>
 """
             )
-        return "".join(bars)
-
-    def _render_metric_agent_detail(self, agent_report: AgentReport, metric_key: str) -> str:
-        metric = next(m for m in agent_report.metrics if m.key == metric_key)
-        status_class = "chip-ok" if metric.available and metric.status == "success" else "chip-fail"
-        status_text = "OK" if metric.available and metric.status == "success" else metric.status.upper()
-        error_row = ""
-        if metric.error_message:
-            error_row = f"""
-        <div class="metric-detail-row">
-          <span class="metric-detail-key">Error</span>
-          <span class="metric-detail-val failure">{escape(metric.error_message)}</span>
-        </div>"""
-        return f"""
+            status_class = "chip-ok" if metric.available and metric.status == "success" else "chip-fail"
+            status_text = "OK" if metric.available and metric.status == "success" else metric.status.upper()
+            error_row = (
+                f"""
+          <div class="metric-detail-row">
+            <span class="metric-detail-key">Error</span>
+            <span class="metric-detail-val failure">{escape(metric.error_message)}</span>
+          </div>
+"""
+                if metric.error_message
+                else ""
+            )
+            detail_cards.append(
+                f"""
         <article class="metric-detail-card">
           <h4>{escape(agent_report.display_name)} <span class="chip {status_class}">{escape(status_text)}</span></h4>
           <div class="metric-detail-row">
@@ -480,3 +421,76 @@ class StaticHtmlReporter:
           </div>
           {error_row}
         </article>"""
+            )
+        return f"""
+    <div id="tab-{metric_id}" class="tab-panel" role="tabpanel" aria-labelledby="btn-{metric_id}">
+      <article class="card" style="margin-bottom: 16px;">
+        <p class="metric-description">{escape(metric_spec.description)}</p>
+      </article>
+      <article class="card">
+        <h2>{escape(metric_spec.label)}</h2>
+        {''.join(bars)}
+      </article>
+      <div class="metric-detail-grid">{''.join(detail_cards)}</div>
+    </div>
+"""
+
+    def _render_practical_tab_panel(self, report: RuntimeReport) -> str:
+        if not report.practical_agents:
+            return ""
+        cards = "".join(self._render_practical_agent_card(agent) for agent in report.practical_agents)
+        return f"""
+    <div id="tab-practical" class="tab-panel" role="tabpanel" aria-labelledby="btn-practical">
+      <article class="card" style="margin-bottom: 16px;">
+        <p class="metric-description">Shows the deterministic practical coding task outcomes for this run, including pass/failure/regression classification, changed files, and allowed touchpoint enforcement.</p>
+      </article>
+      <div class="grid agent-grid">{cards}</div>
+    </div>
+"""
+
+    def _render_practical_summary_row(self, agent_report: PracticalAgentReport) -> str:
+        return f"""
+<tr>
+  <th>{escape(agent_report.agent_name)}</th>
+  <td>{agent_report.summary.get('successful_tasks', 0)}</td>
+  <td>{agent_report.summary.get('failed_tasks', 0)}</td>
+  <td>{agent_report.summary.get('task_count', 0)}</td>
+</tr>
+"""
+
+    def _render_practical_agent_card(self, agent_report: PracticalAgentReport) -> str:
+        tasks = "".join(self._render_practical_task(task) for task in agent_report.tasks)
+        return f"""
+<article class="card">
+  <h3>{escape(agent_report.display_name)}</h3>
+  <p>{escape(agent_report.agent_name)} · {agent_report.summary.get('successful_tasks', 0)}/{agent_report.summary.get('task_count', 0)} passed</p>
+  <ul class="task-list">{tasks}</ul>
+</article>
+"""
+
+    def _render_practical_task(self, task: PracticalTaskResult) -> str:
+        if task.status == "success":
+            status_class = "chip-ok"
+        elif task.status == "regression":
+            status_class = "chip-warn"
+        else:
+            status_class = "chip-fail"
+        violations = (
+            f"<div class=\"failure\">Touchpoint violations: {escape(', '.join(task.touchpoint_violations))}</div>"
+            if task.touchpoint_violations
+            else ""
+        )
+        changed = ", ".join(task.changed_files) if task.changed_files else "none"
+        error = f"<div class=\"failure\">Error: {escape(task.error_message)}</div>" if task.error_message else ""
+        return f"""
+<li>
+  <span class="task-label">{escape(task.task_name)}</span>
+  <span class="chip {status_class}">{escape(task.status.upper())}</span>
+  <div>{escape(task.description)}</div>
+  <div>Classification: {escape(task.classification)}</div>
+  <div>Changed files: {escape(changed)}</div>
+  <div>Score: {escape(task.formatted_score)}</div>
+  {violations}
+  {error}
+</li>
+"""

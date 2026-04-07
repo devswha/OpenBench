@@ -1,0 +1,45 @@
+name: practical
+tier: 1
+description: Deterministic practical coding tasks on frozen fixtures
+tasks:
+  - id: single-file-bug-fix
+    description: Fix the single-file arithmetic bug so the calculator tests pass.
+    fixture: single-file-bug-fix
+    allowed_touchpoints:
+      - calculator.py
+    success_command: python -m pytest -q tests/test_calculator.py
+    regression_command: python -m pytest -q
+    timeout: 120
+  - id: failing-unit-test-repair
+    description: Repair the slugify implementation so the failing unit tests pass.
+    fixture: failing-unit-test-repair
+    allowed_touchpoints:
+      - text_utils.py
+    success_command: python -m pytest -q tests/test_text_utils.py
+    regression_command: python -m pytest -q
+    timeout: 120
+  - id: config-schema-migration
+    description: Migrate timeout loading to support the new schema while preserving backward compatibility.
+    fixture: config-schema-migration
+    allowed_touchpoints:
+      - config_loader.py
+    success_command: python -m pytest -q tests/test_config_loader.py
+    regression_command: python -m pytest -q
+    timeout: 120
+  - id: multi-file-import-repair
+    description: Repair the broken imports after the math_ops module was moved.
+    fixture: multi-file-import-repair
+    allowed_touchpoints:
+      - app.py
+      - report.py
+    success_command: python -m pytest -q tests/test_app.py
+    regression_command: python -m pytest -q
+    timeout: 120
+  - id: validation-error-handling-patch
+    description: Add the missing email validation and trimming behavior.
+    fixture: validation-error-handling-patch
+    allowed_touchpoints:
+      - user_service.py
+    success_command: python -m pytest -q tests/test_user_service.py
+    regression_command: python -m pytest -q
+    timeout: 120

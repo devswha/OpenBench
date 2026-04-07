@@ -6,7 +6,14 @@ from pathlib import Path
 from typing import Any
 
 from openbench.registry import AGENT_REGISTRY
-from openbench.reporters.models import AgentReport, ReportMetric, RuntimeReport, RUNTIME_METRICS
+from openbench.reporters.models import (
+    AgentReport,
+    PracticalAgentReport,
+    PracticalTaskResult,
+    ReportMetric,
+    RuntimeReport,
+    RUNTIME_METRICS,
+)
 
 
 class ReportInputError(ValueError):
@@ -26,27 +33,42 @@ def parse_runtime_report(input_dir: Path) -> ParsedRun:
 
     manifest = _load_json(manifest_path)
     suites = manifest.get("suites", [])
-    if not isinstance(suites, list) or "runtime" not in suites:
-        raise ReportInputError("Input run does not declare the runtime suite")
+    if not isinstance(suites, list):
+        raise ReportInputError("Manifest suites field must be a list")
 
     agents = manifest.get("agents")
     if not isinstance(agents, dict) or not agents:
         raise ReportInputError("Manifest must include at least one agent entry")
 
     agent_reports = []
+    practical_reports = []
     for agent_name in sorted(agents):
         runtime_json_path = input_dir / agent_name / "runtime.json"
-        if not runtime_json_path.exists():
+        practical_json_path = input_dir / agent_name / "practical.json"
+
+        if runtime_json_path.exists():
+            runtime_payload = _load_json(runtime_json_path)
+            agent_reports.append(_parse_runtime_agent_report(agent_name, runtime_payload))
+        elif "runtime" in suites:
             raise ReportInputError(f"Missing runtime.json for agent '{agent_name}'")
-        runtime_payload = _load_json(runtime_json_path)
-        agent_reports.append(_parse_agent_report(agent_name, runtime_payload))
+
+        if practical_json_path.exists():
+            practical_payload = _load_json(practical_json_path)
+            practical_reports.append(_parse_practical_agent_report(agent_name, practical_payload))
+        elif "practical" in suites:
+            raise ReportInputError(f"Missing practical.json for agent '{agent_name}'")
+
+    if not agent_reports and not practical_reports:
+        raise ReportInputError("Input run does not contain any supported suite artifacts")
 
     report = RuntimeReport(
         run_id=input_dir.name,
-        suite="runtime",
+        suite="runtime" if agent_reports else "practical",
         timestamp=str(manifest.get("timestamp", "")),
         environment=dict(manifest.get("environment", {})),
+        suites=[suite for suite in suites if isinstance(suite, str)],
         agents=agent_reports,
+        practical_agents=practical_reports,
     )
     return ParsedRun(report=report, input_dir=input_dir)
 
@@ -62,7 +84,7 @@ def _load_json(path: Path) -> dict[str, Any]:
     return payload
 
 
-def _parse_agent_report(agent_name: str, payload: dict[str, Any]) -> AgentReport:
+def _parse_runtime_agent_report(agent_name: str, payload: dict[str, Any]) -> AgentReport:
     suite = payload.get("suite")
     if suite != "runtime":
         raise ReportInputError(f"Expected runtime suite payload for agent '{agent_name}', got {suite!r}")
@@ -116,6 +138,53 @@ def _parse_agent_report(agent_name: str, payload: dict[str, Any]) -> AgentReport
     return AgentReport(agent_name=agent_name, display_name=display_name, metrics=metrics)
 
 
+def _parse_practical_agent_report(agent_name: str, payload: dict[str, Any]) -> PracticalAgentReport:
+    suite = payload.get("suite")
+    if suite != "practical":
+        raise ReportInputError(f"Expected practical suite payload for agent '{agent_name}', got {suite!r}")
+
+    task_entries = payload.get("tasks")
+    if not isinstance(task_entries, list):
+        raise ReportInputError(f"Expected a task list in practical payload for agent '{agent_name}'")
+
+    tasks: list[PracticalTaskResult] = []
+    for task_entry in task_entries:
+        raw = task_entry.get("raw")
+        if not isinstance(raw, dict):
+            raise ReportInputError(f"Practical task entry for agent '{agent_name}' is missing raw data")
+        tasks.append(
+            PracticalTaskResult(
+                task_name=str(task_entry.get("task_name", "")),
+                description=str(raw.get("description", "")),
+                status=str(task_entry.get("status", "unknown")),
+                classification=str(raw.get("classification", "unknown")),
+                score=float(task_entry["value"]) if isinstance(task_entry.get("value"), (int, float)) else None,
+                changed_files=list(raw.get("changed_files", [])),
+                touchpoint_violations=list(raw.get("touchpoint_violations", [])),
+                error_message=_optional_str(raw.get("agent_error_message")),
+            )
+        )
+
+    agent_factory = AGENT_REGISTRY.get(agent_name)
+    display_name = agent_name
+    if agent_factory is not None:
+        display_name = getattr(agent_factory, "display_name", agent_name)
+
+    summary = payload.get("summary")
+    if not isinstance(summary, dict):
+        raise ReportInputError(f"Practical payload for agent '{agent_name}' is missing summary")
+
+    return PracticalAgentReport(
+        agent_name=agent_name,
+        display_name=display_name,
+        summary={
+            "task_count": int(summary.get("task_count", 0)),
+            "successful_tasks": int(summary.get("successful_tasks", 0)),
+            "failed_tasks": int(summary.get("failed_tasks", 0)),
+        },
+        tasks=tasks,
+    )
+
+
 def _optional_str(value: Any) -> str | None:
     return value if isinstance(value, str) and value else None
-
