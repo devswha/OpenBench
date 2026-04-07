@@ -17,6 +17,9 @@
       --warn: #f59e0b;
       --fail: #ef4444;
     }
+    *, *::before, *::after {
+      box-sizing: border-box;
+    }
     body {
       margin: 0;
       font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
@@ -104,12 +107,121 @@
     .failure {
       color: #fecaca;
     }
+
+    /* ── Tab navigation ── */
+    .tab-nav {
+      display: flex;
+      gap: 4px;
+      padding: 4px;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      margin-bottom: 24px;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+    .tab-nav::-webkit-scrollbar {
+      display: none;
+    }
+    .tab-btn {
+      flex-shrink: 0;
+      padding: 8px 20px;
+      border: none;
+      border-radius: 8px;
+      background: transparent;
+      color: var(--muted);
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.15s, color 0.15s;
+      white-space: nowrap;
+      font-family: inherit;
+    }
+    .tab-btn:hover {
+      background: rgba(97, 218, 251, 0.08);
+      color: var(--text);
+    }
+    .tab-btn.active {
+      background: rgba(97, 218, 251, 0.14);
+      color: var(--accent);
+      font-weight: 600;
+    }
+
+    /* ── Tab panels ── */
+    .tab-panel {
+      display: none;
+    }
+    .tab-panel.active {
+      display: block;
+    }
+
+    /* ── Metric description card ── */
+    .metric-description {
+      font-size: 14px;
+      line-height: 1.6;
+      margin: 0;
+    }
+
+    /* ── Per-agent detail table in metric tab ── */
+    .metric-detail-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 16px;
+      margin-top: 16px;
+    }
+    .metric-detail-card {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 16px;
+    }
+    .metric-detail-card h4 {
+      margin: 0 0 8px;
+      font-size: 15px;
+    }
+    .metric-detail-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 6px 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 13px;
+    }
+    .metric-detail-row:last-child {
+      border-bottom: none;
+    }
+    .metric-detail-key {
+      color: var(--muted);
+    }
+    .metric-detail-val {
+      color: var(--text);
+      font-weight: 600;
+      font-variant-numeric: tabular-nums;
+    }
+
+    @media (max-width: 600px) {
+      .tab-btn {
+        padding: 7px 14px;
+        font-size: 13px;
+      }
+      main {
+        padding: 20px 12px 48px;
+      }
+    }
   </style>
 </head>
 <body>
   <main>
-    <section class="grid summary-grid">
-      <article class="card">
+    <nav class="tab-nav" role="tablist" aria-label="Report sections">
+      <button class="tab-btn" id="btn-overview" role="tab" data-tab="overview" aria-selected="false" aria-controls="tab-overview">Overview</button>
+      <button class="tab-btn" id="btn-startup-ms" role="tab" data-tab="startup-ms" aria-selected="false" aria-controls="tab-startup-ms">Startup</button>
+      <button class="tab-btn" id="btn-memory-mb" role="tab" data-tab="memory-mb" aria-selected="false" aria-controls="tab-memory-mb">Memory</button>
+      <button class="tab-btn" id="btn-binary-size-mb" role="tab" data-tab="binary-size-mb" aria-selected="false" aria-controls="tab-binary-size-mb">Binary size</button>
+    </nav>
+
+    <div id="tab-overview" class="tab-panel" role="tabpanel" aria-labelledby="btn-overview">
+      <section class="grid summary-grid">
+        <article class="card">
         <h1>OpenBench Runtime Report</h1>
         <p>Run ID: <strong>latest</strong></p>
       </article>
@@ -125,21 +237,52 @@
         <h2>Timestamp</h2>
         <p><strong>2026-04-07T07:01:39.737731+00:00</strong></p>
       </article>
-    </section>
+      </section>
 
-    <section class="card" style="margin-top: 20px;">
-      <h2>Environment</h2>
-      <table>
-        <tbody>
-          <tr><th>cpu</th><td>x86_64</td></tr><tr><th>memory_gb</th><td>62.72</td></tr><tr><th>os</th><td>Linux-6.8.0-106-generic-x86_64-with-glibc2.35</td></tr><tr><th>python</th><td>3.11.15</td></tr>
-        </tbody>
-      </table>
-    </section>
+      <section class="card" style="margin-top: 20px;">
+        <h2>Environment</h2>
+        <table>
+          <tbody>
+            <tr><th>cpu</th><td>x86_64</td></tr><tr><th>memory_gb</th><td>62.72</td></tr><tr><th>os</th><td>Linux-6.8.0-106-generic-x86_64-with-glibc2.35</td></tr><tr><th>python</th><td>3.11.15</td></tr>
+          </tbody>
+        </table>
+      </section>
 
-    <section style="margin-top: 20px;">
-      <h2>Agent cards</h2>
-      <div class="grid agent-grid">
-        
+      <section class="card" style="margin-top: 20px;">
+        <h2>Comparison table</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Agent</th>
+              <th>Startup</th>
+              <th>Memory</th>
+              <th>Binary size</th>
+            </tr>
+          </thead>
+          <tbody>
+            
+<tr>
+  <th>omc</th>
+  <td>127.35 ms · score 94.75</td>
+  <td>192.38 MB · score 71.26</td>
+  <td>0.00005 MB · score 100.00</td>
+</tr>
+
+<tr>
+  <th>omx</th>
+  <td>162.13 ms · score 89.51</td>
+  <td>61.99 MB · score 95.85</td>
+  <td>0.00004 MB · score 100.00</td>
+</tr>
+
+          </tbody>
+        </table>
+      </section>
+
+      <section style="margin-top: 20px;">
+        <h2>Agent cards</h2>
+        <div class="grid agent-grid">
+          
 <article class="card">
   <h3>oh-my-claudecode</h3>
   <p>omc</p>
@@ -204,47 +347,28 @@
   </ul>
 </article>
 
-      </div>
-    </section>
+        </div>
+      </section>
 
-    <section class="card" style="margin-top: 20px;">
-      <h2>Comparison table</h2>
-      <table>
-        <thead>
-          <tr>
-            <th>Agent</th>
-            <th>Startup</th>
-            <th>Memory</th>
-            <th>Binary size</th>
-          </tr>
-        </thead>
-        <tbody>
-          
-<tr>
-  <th>omc</th>
-  <td>127.35 ms · score 94.75</td>
-  <td>192.38 MB · score 71.26</td>
-  <td>0.00005 MB · score 100.00</td>
-</tr>
+      <section class="card" style="margin-top: 20px;">
+        <h2>Notes</h2>
+        <p class="note">
+          Raw values remain visible alongside normalized scores. Lower values are better for startup, memory,
+          and binary-size metrics. Binary-size currently reflects the resolved command path footprint, which may
+          be a launcher wrapper rather than the full installation size.
+        </p>
+      </section>
+    </div>
 
-<tr>
-  <th>omx</th>
-  <td>162.13 ms · score 89.51</td>
-  <td>61.99 MB · score 95.85</td>
-  <td>0.00004 MB · score 100.00</td>
-</tr>
-
-        </tbody>
-      </table>
-    </section>
-
-    <section style="margin-top: 20px;">
-      <h2>Metric charts</h2>
-      <div class="grid">
+    
+    <div id="tab-startup-ms" class="tab-panel" role="tabpanel" aria-labelledby="btn-startup-ms">
+      
+      <article class="card" style="margin-bottom: 16px;">
+        <p class="metric-description">Measures how quickly the agent CLI starts up and becomes responsive. Uses hyperfine to run `&lt;command&gt; --version` with warmup, reporting the mean execution time. Lower is better.</p>
+      </article>
+      <article class="card">
+        <h2>Startup</h2>
         
-<article class="card">
-  <h3>Startup</h3>
-  
 <div style="margin-bottom: 12px;">
   <div><strong>omc</strong> — 127.35 ms (score 94.75)</div>
   <div class="bar-track"><div class="bar-fill" style="width: 94.75%"></div></div>
@@ -255,11 +379,45 @@
   <div class="bar-track"><div class="bar-fill" style="width: 89.51%"></div></div>
 </div>
 
-</article>
+      </article>
 
-<article class="card">
-  <h3>Memory</h3>
-  
+      <div class="metric-detail-grid">
+        
+        <article class="metric-detail-card">
+          <h4>oh-my-claudecode <span class="chip chip-ok">OK</span></h4>
+          <div class="metric-detail-row">
+            <span class="metric-detail-key">Raw value</span>
+            <span class="metric-detail-val">127.35 ms</span>
+          </div>
+          <div class="metric-detail-row">
+            <span class="metric-detail-key">Normalized score</span>
+            <span class="metric-detail-val">94.75</span>
+          </div>
+          
+        </article>
+        <article class="metric-detail-card">
+          <h4>oh-my-codex <span class="chip chip-ok">OK</span></h4>
+          <div class="metric-detail-row">
+            <span class="metric-detail-key">Raw value</span>
+            <span class="metric-detail-val">162.13 ms</span>
+          </div>
+          <div class="metric-detail-row">
+            <span class="metric-detail-key">Normalized score</span>
+            <span class="metric-detail-val">89.51</span>
+          </div>
+          
+        </article>
+      </div>
+    </div>
+
+    <div id="tab-memory-mb" class="tab-panel" role="tabpanel" aria-labelledby="btn-memory-mb">
+      
+      <article class="card" style="margin-bottom: 16px;">
+        <p class="metric-description">Measures peak memory consumption (Maximum Resident Set Size) during a single CLI invocation. Uses GNU time to track memory allocation. Lower is better.</p>
+      </article>
+      <article class="card">
+        <h2>Memory</h2>
+        
 <div style="margin-bottom: 12px;">
   <div><strong>omc</strong> — 192.38 MB (score 71.26)</div>
   <div class="bar-track"><div class="bar-fill" style="width: 71.26%"></div></div>
@@ -270,11 +428,45 @@
   <div class="bar-track"><div class="bar-fill" style="width: 95.85%"></div></div>
 </div>
 
-</article>
+      </article>
 
-<article class="card">
-  <h3>Binary size</h3>
-  
+      <div class="metric-detail-grid">
+        
+        <article class="metric-detail-card">
+          <h4>oh-my-claudecode <span class="chip chip-ok">OK</span></h4>
+          <div class="metric-detail-row">
+            <span class="metric-detail-key">Raw value</span>
+            <span class="metric-detail-val">192.38 MB</span>
+          </div>
+          <div class="metric-detail-row">
+            <span class="metric-detail-key">Normalized score</span>
+            <span class="metric-detail-val">71.26</span>
+          </div>
+          
+        </article>
+        <article class="metric-detail-card">
+          <h4>oh-my-codex <span class="chip chip-ok">OK</span></h4>
+          <div class="metric-detail-row">
+            <span class="metric-detail-key">Raw value</span>
+            <span class="metric-detail-val">61.99 MB</span>
+          </div>
+          <div class="metric-detail-row">
+            <span class="metric-detail-key">Normalized score</span>
+            <span class="metric-detail-val">95.85</span>
+          </div>
+          
+        </article>
+      </div>
+    </div>
+
+    <div id="tab-binary-size-mb" class="tab-panel" role="tabpanel" aria-labelledby="btn-binary-size-mb">
+      
+      <article class="card" style="margin-bottom: 16px;">
+        <p class="metric-description">Measures the on-disk footprint of the agent CLI entry point. Uses du to calculate the resolved command path size. Lower is better.</p>
+      </article>
+      <article class="card">
+        <h2>Binary size</h2>
+        
 <div style="margin-bottom: 12px;">
   <div><strong>omc</strong> — 0.00005 MB (score 100.00)</div>
   <div class="bar-track"><div class="bar-fill" style="width: 100.00%"></div></div>
@@ -285,19 +477,72 @@
   <div class="bar-track"><div class="bar-fill" style="width: 100.00%"></div></div>
 </div>
 
-</article>
+      </article>
 
+      <div class="metric-detail-grid">
+        
+        <article class="metric-detail-card">
+          <h4>oh-my-claudecode <span class="chip chip-ok">OK</span></h4>
+          <div class="metric-detail-row">
+            <span class="metric-detail-key">Raw value</span>
+            <span class="metric-detail-val">0.00005 MB</span>
+          </div>
+          <div class="metric-detail-row">
+            <span class="metric-detail-key">Normalized score</span>
+            <span class="metric-detail-val">100.00</span>
+          </div>
+          
+        </article>
+        <article class="metric-detail-card">
+          <h4>oh-my-codex <span class="chip chip-ok">OK</span></h4>
+          <div class="metric-detail-row">
+            <span class="metric-detail-key">Raw value</span>
+            <span class="metric-detail-val">0.00004 MB</span>
+          </div>
+          <div class="metric-detail-row">
+            <span class="metric-detail-key">Normalized score</span>
+            <span class="metric-detail-val">100.00</span>
+          </div>
+          
+        </article>
       </div>
-    </section>
+    </div>
 
-    <section class="card" style="margin-top: 20px;">
-      <h2>Notes</h2>
-      <p class="note">
-        Raw values remain visible alongside normalized scores. Lower values are better for startup, memory,
-        and binary-size metrics. Binary-size currently reflects the resolved command path footprint, which may
-        be a launcher wrapper rather than the full installation size.
-      </p>
-    </section>
   </main>
+
+  <script>
+    (function () {
+      var TABS = Array.from(document.querySelectorAll('.tab-btn')).map(function (b) { return b.dataset.tab; });
+
+      function activate(tabId) {
+        document.querySelectorAll('.tab-btn').forEach(function (btn) {
+          btn.classList.toggle('active', btn.dataset.tab === tabId);
+          btn.setAttribute('aria-selected', btn.dataset.tab === tabId ? 'true' : 'false');
+        });
+        document.querySelectorAll('.tab-panel').forEach(function (panel) {
+          panel.classList.toggle('active', panel.id === 'tab-' + tabId);
+        });
+      }
+
+      function getActiveFromHash() {
+        var hash = window.location.hash.replace('#', '');
+        return TABS.indexOf(hash) !== -1 ? hash : 'overview';
+      }
+
+      document.querySelectorAll('.tab-btn').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          var tabId = btn.dataset.tab;
+          history.replaceState(null, '', '#' + tabId);
+          activate(tabId);
+        });
+      });
+
+      window.addEventListener('hashchange', function () {
+        activate(getActiveFromHash());
+      });
+
+      activate(getActiveFromHash());
+    })();
+  </script>
 </body>
 </html>

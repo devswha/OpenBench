@@ -9,12 +9,38 @@ class MetricSpec:
     label: str
     unit: str
     lower_is_better: bool = True
+    description: str = ""
 
 
 RUNTIME_METRICS: tuple[MetricSpec, ...] = (
-    MetricSpec(key="startup_ms", label="Startup", unit="ms"),
-    MetricSpec(key="memory_mb", label="Memory", unit="MB"),
-    MetricSpec(key="binary_size_mb", label="Binary size", unit="MB"),
+    MetricSpec(
+        key="startup_ms",
+        label="Startup",
+        unit="ms",
+        description=(
+            "Measures how quickly the agent CLI starts up and becomes responsive. "
+            "Uses hyperfine to run `<command> --version` with warmup, reporting the mean "
+            "execution time. Lower is better."
+        ),
+    ),
+    MetricSpec(
+        key="memory_mb",
+        label="Memory",
+        unit="MB",
+        description=(
+            "Measures peak memory consumption (Maximum Resident Set Size) during a single "
+            "CLI invocation. Uses GNU time to track memory allocation. Lower is better."
+        ),
+    ),
+    MetricSpec(
+        key="binary_size_mb",
+        label="Binary size",
+        unit="MB",
+        description=(
+            "Measures the on-disk footprint of the agent CLI entry point. Uses du to "
+            "calculate the resolved command path size. Lower is better."
+        ),
+    ),
 )
 
 
