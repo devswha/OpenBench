@@ -93,12 +93,36 @@ class PracticalTaskResult:
     changed_files: list[str] = field(default_factory=list)
     touchpoint_violations: list[str] = field(default_factory=list)
     error_message: str | None = None
+    duration_ms: int | None = None
+    token_usage: dict[str, int | float | str | None] | None = None
 
     @property
     def formatted_score(self) -> str:
         if self.score is None:
             return "—"
         return f"{self.score:.2f}"
+
+    @property
+    def formatted_duration(self) -> str:
+        if self.duration_ms is None:
+            return "—"
+        if self.duration_ms < 1000:
+            return f"{self.duration_ms} ms"
+        seconds = self.duration_ms / 1000.0
+        if seconds < 60:
+            return f"{seconds:.1f}s"
+        minutes = int(seconds // 60)
+        remaining = seconds % 60
+        return f"{minutes}m {remaining:.0f}s"
+
+    @property
+    def formatted_tokens(self) -> str:
+        if not self.token_usage:
+            return "—"
+        total = self.token_usage.get("total_tokens")
+        if total is None or not isinstance(total, (int, float)):
+            return "—"
+        return f"{int(total):,}"
 
 
 @dataclass(slots=True)
@@ -116,5 +140,7 @@ class RuntimeReport:
     timestamp: str
     environment: dict[str, str | int | float]
     suites: list[str] = field(default_factory=list)
+    runtime_execution_environment: dict[str, str | int | float | None] = field(default_factory=dict)
+    practical_execution_environment: dict[str, str | int | float | None] = field(default_factory=dict)
     agents: list[AgentReport] = field(default_factory=list)
     practical_agents: list[PracticalAgentReport] = field(default_factory=list)

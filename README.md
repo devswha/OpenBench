@@ -33,6 +33,7 @@ This MVP does **not** yet benchmark prompt quality, repo-editing quality, or orc
 - **Suites:** `runtime`, `practical`
 - **Commands:** `run`, `list`, `doctor`, `report`
 - **Artifacts:** `manifest.json`, per-agent `runtime.json`, and static `report.html`
+- **Execution modes:** native/local baseline, plus optional containerized mode for `practical`
 
 ### Not implemented yet
 
@@ -114,6 +115,8 @@ OpenBench also includes a **small deterministic practical coding task suite** fo
 - multi-file import/rename repair
 - validation/error-handling patch
 
+An optional **containerized integrity mode** is also available for the `practical` suite so runs can be evaluated in a more controlled Docker environment while keeping native/local execution as the default baseline.
+
 ---
 
 ## Result Format
@@ -172,6 +175,7 @@ uv run --python 3.11 python -m openbench.cli list suites
 uv run --python 3.11 python -m openbench.cli run --agent omc --suite runtime
 uv run --python 3.11 python -m openbench.cli run --agent omx --suite runtime
 uv run --python 3.11 python -m openbench.cli run --agent omc --suite practical
+uv run --python 3.11 python -m openbench.cli run --agent omc --suite practical --environment-mode containerized
 uv run --python 3.11 python -m openbench.cli report --format html --input ./results/<run-id>
 ```
 
@@ -215,6 +219,12 @@ Runs one agent against one suite:
 
 ```bash
 openbench run --agent omc --suite runtime --results-dir ./results
+```
+
+For practical tasks, you can opt into Docker-based isolation:
+
+```bash
+openbench run --agent omc --suite practical --environment-mode containerized --results-dir ./results
 ```
 
 ### `report`

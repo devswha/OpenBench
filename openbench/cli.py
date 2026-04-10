@@ -5,6 +5,8 @@ from pathlib import Path
 import click
 
 from openbench.config import load_config
+from openbench.containerization import docker_doctor_checks
+from openbench.models import EnvironmentMode
 from openbench.reporters import ReportInputError, StaticHtmlReporter, parse_runtime_report
 from openbench.registry import AGENT_REGISTRY, SUITE_REGISTRY, list_agents, list_suites
 from openbench.runner import Runner
@@ -35,13 +37,24 @@ def list_suites_command() -> None:
 @main.command()
 @click.option("--config", "config_path", type=click.Path(path_type=Path, dir_okay=False), default=None)
 @click.option("--results-dir", type=click.Path(path_type=Path, file_okay=False), default=None)
-def doctor(config_path: Path | None, results_dir: Path | None) -> None:
+@click.option(
+    "--environment-mode",
+    type=click.Choice([mode.value for mode in EnvironmentMode]),
+    default=EnvironmentMode.NATIVE.value,
+    show_default=True,
+)
+def doctor(config_path: Path | None, results_dir: Path | None, environment_mode: str) -> None:
     """Check environment readiness for the current MVP scope."""
-    config = load_config(config_path=config_path, results_dir_override=results_dir)
+    config = load_config(
+        config_path=config_path,
+        results_dir_override=results_dir,
+        environment_mode_override=EnvironmentMode(environment_mode),
+    )
     checks = []
     for agent_factory in AGENT_REGISTRY.values():
         checks.extend(agent_factory().doctor_checks())
     checks.extend(SUITE_REGISTRY["runtime"](config).doctor_checks())
+    checks.extend(docker_doctor_checks(config))
     all_ok = True
     for check in checks:
         status = "OK" if check.ok else "FAIL"
@@ -61,9 +74,29 @@ def doctor(config_path: Path | None, results_dir: Path | None) -> None:
 @click.option("--suite", "suite_name", required=True, type=click.Choice(list(SUITE_REGISTRY.keys())))
 @click.option("--config", "config_path", type=click.Path(path_type=Path, dir_okay=False), default=None)
 @click.option("--results-dir", type=click.Path(path_type=Path, file_okay=False), default=None)
-def run(agent_name: str, suite_name: str, config_path: Path | None, results_dir: Path | None) -> None:
+@click.option(
+    "--environment-mode",
+    type=click.Choice([mode.value for mode in EnvironmentMode]),
+    default=EnvironmentMode.NATIVE.value,
+    show_default=True,
+)
+def run(
+    agent_name: str,
+    suite_name: str,
+    config_path: Path | None,
+    results_dir: Path | None,
+    environment_mode: str,
+) -> None:
     """Execute the MVP benchmark slice."""
-    config = load_config(config_path=config_path, results_dir_override=results_dir)
+    mode = EnvironmentMode(environment_mode)
+    if mode == EnvironmentMode.CONTAINERIZED and suite_name != "practical":
+        raise click.ClickException("Containerized mode is currently supported for the practical suite only")
+
+    config = load_config(
+        config_path=config_path,
+        results_dir_override=results_dir,
+        environment_mode_override=mode,
+    )
     summary = Runner(config).run(agent_name, suite_name)
 
     click.echo(f"Run directory: {summary.run_dir}")

@@ -6,7 +6,14 @@ import os
 from pathlib import Path
 import shutil
 import subprocess
+import time
 
+from openbench.containerization import (
+    ContainerizedExecutionError,
+    ensure_practical_images,
+    execution_environment_payload,
+    run_in_container,
+)
 from openbench.models import DoctorCheck, RunResult, RunStatus, Task
 from openbench.suites.runtime.measurements import measure_binary_size, measure_memory, measure_startup
 from openbench.utils.process import combine_output, run_subprocess
@@ -21,6 +28,7 @@ class AgentAdapter(ABC):
     def __init__(self, command: str | None = None) -> None:
         if command is not None:
             self.command = command
+        self._execution_environment_cache: dict[str, object] = {}
 
     def resolve_command(self) -> str | None:
         candidate = self.command
@@ -102,7 +110,10 @@ class RuntimeCommandAgent(AgentAdapter):
             peak_memory_mb=measurement.peak_memory_mb,
             exit_code=measurement.exit_code,
             error_message=measurement.error_message,
-            raw=measurement.raw,
+            raw={
+                **measurement.raw,
+                "execution_environment": {"mode": task.metadata.get("environment_mode", "native")},
+            },
         )
 
     def build_practical_command(self, resolved_command: str, task: Task) -> list[str]:
@@ -114,34 +125,84 @@ class RuntimeCommandAgent(AgentAdapter):
             return self._missing_command_result(task, {"task_kind": "practical", "available": False})
 
         before = self._snapshot_workspace(task.workspace)
+        environment_mode = str(task.metadata.get("environment_mode", "native"))
+        started = time.perf_counter()
         try:
-            completed = run_subprocess(
-                self.build_practical_command(resolved_command, task),
-                timeout=task.timeout,
-                cwd=task.workspace,
-            )
+            execution_environment_contract = None
+            if environment_mode == "containerized":
+                cache_key = f"{environment_mode}:{self.name}"
+                cached = self._execution_environment_cache.get(cache_key)
+                if cached is None:
+                    cached = ensure_practical_images(
+                        task.metadata["config"],
+                        self.name,
+                        repo_root=Path(task.metadata["repo_root"]),
+                    )
+                    self._execution_environment_cache[cache_key] = cached
+                execution_environment_contract = cached
+                completed = run_in_container(
+                    execution_environment=execution_environment_contract,
+                    command=self.build_practical_command(self.command, task),
+                    workspace=task.workspace,
+                    timeout=task.timeout,
+                )
+            else:
+                completed = run_subprocess(
+                    self.build_practical_command(resolved_command, task),
+                    timeout=task.timeout,
+                    cwd=task.workspace,
+                )
         except subprocess.TimeoutExpired:
+            duration_ms = int((time.perf_counter() - started) * 1000)
             after = self._snapshot_workspace(task.workspace)
             return RunResult(
                 task=task,
                 status=RunStatus.TIMEOUT,
                 output="",
-                duration_ms=task.timeout * 1000,
+                duration_ms=duration_ms,
                 error_message=f"Task timed out after {task.timeout}s",
                 files_changed=self._diff_workspace(before, after),
                 raw={"task_kind": "practical", "available": False},
             )
+        except ContainerizedExecutionError as exc:
+            duration_ms = int((time.perf_counter() - started) * 1000)
+            after = self._snapshot_workspace(task.workspace)
+            return RunResult(
+                task=task,
+                status=RunStatus.SETUP_ERROR,
+                output="",
+                duration_ms=duration_ms,
+                error_message=str(exc),
+                files_changed=self._diff_workspace(before, after),
+                raw={
+                    "task_kind": "practical",
+                    "available": False,
+                    "execution_environment": {"mode": "containerized"},
+                },
+            )
 
+        duration_ms = int((time.perf_counter() - started) * 1000)
         after = self._snapshot_workspace(task.workspace)
         status = RunStatus.SUCCESS if completed.returncode == 0 else RunStatus.FAILED
+        execution_environment = (
+            execution_environment_payload(execution_environment_contract)
+            if environment_mode == "containerized"
+            else {"mode": "native"}
+        )
         return RunResult(
             task=task,
             status=status,
             output=combine_output(completed),
+            duration_ms=duration_ms,
             exit_code=completed.returncode,
             error_message=None if completed.returncode == 0 else "Agent command failed",
             files_changed=self._diff_workspace(before, after),
-            raw={"task_kind": "practical", "available": True},
+            raw={
+                "task_kind": "practical",
+                "available": True,
+                "execution_environment": execution_environment,
+                "execution_environment_contract": execution_environment_contract,
+            },
         )
 
     def _snapshot_workspace(self, workspace: Path) -> dict[str, str]:

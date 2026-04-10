@@ -35,3 +35,19 @@ def test_report_contains_agent_names_and_metrics(tmp_path) -> None:
     assert "Practical task summary" in html
     assert "single-file-bug-fix" in html
     assert "5/5 passed" in html
+    assert "Runtime mode" in html
+    assert "Practical mode" in html
+    assert "native" in html
+
+
+def test_report_renders_environment_mode(tmp_path) -> None:
+    fixture_dir = Path("tests/fixtures/results/runtime-containerized-practical")
+    parsed = parse_runtime_report(fixture_dir)
+
+    output_path = StaticHtmlReporter().write(parsed.report, tmp_path / "report.html")
+    html = output_path.read_text()
+
+    assert "Runtime mode" in html
+    assert "Practical mode" in html
+    assert "containerized" in html
+    assert "openbench-practical-base:phase2b" in html

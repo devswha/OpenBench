@@ -34,3 +34,4 @@ def test_report_smoke(tmp_path) -> None:
     assert "omc" in html
     assert "omx" in html
     assert "Practical task summary" in html
+    assert "Runtime mode" in html

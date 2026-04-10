@@ -67,6 +67,8 @@ def parse_runtime_report(input_dir: Path) -> ParsedRun:
         timestamp=str(manifest.get("timestamp", "")),
         environment=dict(manifest.get("environment", {})),
         suites=[suite for suite in suites if isinstance(suite, str)],
+        runtime_execution_environment=_first_execution_environment(agent_reports, "runtime", input_dir),
+        practical_execution_environment=_first_execution_environment(practical_reports, "practical", input_dir),
         agents=agent_reports,
         practical_agents=practical_reports,
     )
@@ -152,6 +154,8 @@ def _parse_practical_agent_report(agent_name: str, payload: dict[str, Any]) -> P
         raw = task_entry.get("raw")
         if not isinstance(raw, dict):
             raise ReportInputError(f"Practical task entry for agent '{agent_name}' is missing raw data")
+        raw_duration = raw.get("duration_ms")
+        raw_token_usage = raw.get("token_usage")
         tasks.append(
             PracticalTaskResult(
                 task_name=str(task_entry.get("task_name", "")),
@@ -162,6 +166,8 @@ def _parse_practical_agent_report(agent_name: str, payload: dict[str, Any]) -> P
                 changed_files=list(raw.get("changed_files", [])),
                 touchpoint_violations=list(raw.get("touchpoint_violations", [])),
                 error_message=_optional_str(raw.get("agent_error_message")),
+                duration_ms=int(raw_duration) if isinstance(raw_duration, (int, float)) else None,
+                token_usage=dict(raw_token_usage) if isinstance(raw_token_usage, dict) else None,
             )
         )
 
@@ -188,3 +194,13 @@ def _parse_practical_agent_report(agent_name: str, payload: dict[str, Any]) -> P
 
 def _optional_str(value: Any) -> str | None:
     return value if isinstance(value, str) and value else None
+
+
+def _first_execution_environment(items: list[Any], suite_name: str, input_dir: Path) -> dict[str, Any]:
+    if not items:
+        return {}
+    agent_name = items[0].agent_name
+    suite_path = input_dir / agent_name / f"{suite_name}.json"
+    payload = _load_json(suite_path)
+    environment = payload.get("execution_environment", {})
+    return dict(environment) if isinstance(environment, dict) else {}

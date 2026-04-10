@@ -20,6 +20,7 @@
         ],
         "classification": "pass",
         "description": "Fix the single-file arithmetic bug so the calculator tests pass.",
+        "duration_ms": 3800,
         "regression_command": "python -m pytest -q",
         "regression_command_exit_code": 0,
         "regression_command_output": "..                                                                       [100%]\n2 passed in 0.01s",
@@ -27,6 +28,13 @@
         "success_command_exit_code": 0,
         "success_command_output": "..                                                                       [100%]\n2 passed in 0.01s",
         "task_kind": "practical",
+        "token_usage": {
+          "estimated_cost_usd": 0.014,
+          "input_tokens": 820,
+          "output_tokens": 280,
+          "provider": "openai",
+          "total_tokens": 1100
+        },
         "touchpoint_violations": []
       },
       "status": "success",
@@ -46,6 +54,7 @@
         ],
         "classification": "pass",
         "description": "Repair the slugify implementation so the failing unit tests pass.",
+        "duration_ms": 5100,
         "regression_command": "python -m pytest -q",
         "regression_command_exit_code": 0,
         "regression_command_output": "..                                                                       [100%]\n2 passed in 0.01s",
@@ -53,6 +62,13 @@
         "success_command_exit_code": 0,
         "success_command_output": "..                                                                       [100%]\n2 passed in 0.03s",
         "task_kind": "practical",
+        "token_usage": {
+          "estimated_cost_usd": 0.019,
+          "input_tokens": 1050,
+          "output_tokens": 360,
+          "provider": "openai",
+          "total_tokens": 1410
+        },
         "touchpoint_violations": []
       },
       "status": "success",
@@ -72,6 +88,7 @@
         ],
         "classification": "pass",
         "description": "Migrate timeout loading to support the new schema while preserving backward compatibility.",
+        "duration_ms": 6900,
         "regression_command": "python -m pytest -q",
         "regression_command_exit_code": 0,
         "regression_command_output": "..                                                                       [100%]\n2 passed in 0.01s",
@@ -79,6 +96,13 @@
         "success_command_exit_code": 0,
         "success_command_output": "..                                                                       [100%]\n2 passed in 0.02s",
         "task_kind": "practical",
+        "token_usage": {
+          "estimated_cost_usd": 0.027,
+          "input_tokens": 1320,
+          "output_tokens": 450,
+          "provider": "openai",
+          "total_tokens": 1770
+        },
         "touchpoint_violations": []
       },
       "status": "success",
@@ -100,6 +124,7 @@
         ],
         "classification": "pass",
         "description": "Repair the broken imports after the math_ops module was moved.",
+        "duration_ms": 8200,
         "regression_command": "python -m pytest -q",
         "regression_command_exit_code": 0,
         "regression_command_output": "..                                                                       [100%]\n2 passed in 0.02s",
@@ -107,6 +132,13 @@
         "success_command_exit_code": 0,
         "success_command_output": "..                                                                       [100%]\n2 passed in 0.03s",
         "task_kind": "practical",
+        "token_usage": {
+          "estimated_cost_usd": 0.033,
+          "input_tokens": 1480,
+          "output_tokens": 520,
+          "provider": "openai",
+          "total_tokens": 2000
+        },
         "touchpoint_violations": []
       },
       "status": "success",
@@ -126,6 +158,7 @@
         ],
         "classification": "pass",
         "description": "Add the missing email validation and trimming behavior.",
+        "duration_ms": 6300,
         "regression_command": "python -m pytest -q",
         "regression_command_exit_code": 0,
         "regression_command_output": "..                                                                       [100%]\n2 passed in 0.02s",
@@ -133,6 +166,13 @@
         "success_command_exit_code": 0,
         "success_command_output": "..                                                                       [100%]\n2 passed in 0.02s",
         "task_kind": "practical",
+        "token_usage": {
+          "estimated_cost_usd": 0.024,
+          "input_tokens": 1180,
+          "output_tokens": 410,
+          "provider": "openai",
+          "total_tokens": 1590
+        },
         "touchpoint_violations": []
       },
       "status": "success",

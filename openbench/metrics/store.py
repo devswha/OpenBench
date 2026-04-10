@@ -31,6 +31,7 @@ class ResultStore:
         agent_version: str,
         agent_command: str,
         suite_name: str,
+        execution_environment: dict[str, Any] | None = None,
     ) -> Path:
         manifest = {
             "version": "1.0",
@@ -48,18 +49,31 @@ class ResultStore:
                 "binary_size_mb": config.normalization.binary_size_mb,
             },
             "environment": self._environment_info(),
+            "execution_environment": execution_environment
+            or {
+                "mode": config.environment_mode.value,
+            },
         }
         manifest_path = run_dir / "manifest.json"
         manifest_path.write_text(json.dumps(manifest, indent=2, sort_keys=True))
         return manifest_path
 
-    def write_suite_results(self, *, run_dir: Path, agent_name: str, suite_name: str, scores: list[Score]) -> Path:
+    def write_suite_results(
+        self,
+        *,
+        run_dir: Path,
+        agent_name: str,
+        suite_name: str,
+        scores: list[Score],
+        execution_environment: dict[str, Any] | None = None,
+    ) -> Path:
         agent_dir = run_dir / agent_name
         agent_dir.mkdir(parents=True, exist_ok=True)
         payload = {
             "suite": suite_name,
             "agent": agent_name,
             "generated_at": datetime.now(timezone.utc).isoformat(),
+            "execution_environment": execution_environment or {},
             "tasks": [self._serialize(score) for score in scores],
             "summary": {
                 "task_count": len(scores),

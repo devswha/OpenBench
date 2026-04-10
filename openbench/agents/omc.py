@@ -17,6 +17,7 @@ class OMCAgent(RuntimeCommandAgent):
         return [
             resolved_command,
             "-p",
+            "--bare",
             "--dangerously-skip-permissions",
             task.prompt,
         ]

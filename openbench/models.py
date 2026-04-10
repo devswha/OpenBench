@@ -6,6 +6,11 @@ from pathlib import Path
 from typing import Any
 
 
+class EnvironmentMode(str, Enum):
+    NATIVE = "native"
+    CONTAINERIZED = "containerized"
+
+
 class RunStatus(str, Enum):
     SUCCESS = "success"
     FAILED = "failed"
@@ -33,6 +38,17 @@ class Task:
     timeout: int = 30
     expected: dict[str, Any] = field(default_factory=dict)
     metadata: dict[str, Any] = field(default_factory=dict)
+
+
+@dataclass(slots=True)
+class ExecutionEnvironment:
+    mode: EnvironmentMode = EnvironmentMode.NATIVE
+    base_image: str | None = None
+    base_image_id: str | None = None
+    agent_image: str | None = None
+    agent_image_id: str | None = None
+    setup_overhead_ms: int = 0
+    cache_metadata: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass(slots=True)

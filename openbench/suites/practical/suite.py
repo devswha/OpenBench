@@ -8,6 +8,7 @@ from typing import Any
 
 import yaml
 
+from openbench.containerization import ContainerizedExecutionError, run_check_in_container
 from openbench.models import RunResult, RunStatus, Score, Task
 from openbench.suites.base import BenchSuite
 from openbench.suites.practical.contracts import PracticalTaskContract
@@ -62,32 +63,80 @@ class PracticalTaskSuite(BenchSuite):
         success_command = str(result.task.metadata["success_command"])
         regression_command = str(result.task.metadata["regression_command"])
         allowed_touchpoints = set(result.task.metadata["allowed_touchpoints"])
+        execution_environment = result.raw.get(
+            "execution_environment",
+            {"mode": result.task.metadata.get("environment_mode", "native")},
+        )
 
         touchpoint_violations = [
             changed for changed in result.files_changed if changed not in allowed_touchpoints
         ]
 
         if result.status != RunStatus.SUCCESS:
+            error_raw: dict[str, object] = {
+                "task_kind": "practical",
+                "classification": "agent_error",
+                "changed_files": result.files_changed,
+                "touchpoint_violations": touchpoint_violations,
+                "error_message": result.error_message,
+                "output": result.output,
+                "execution_environment": execution_environment,
+                "duration_ms": result.duration_ms,
+            }
+            if result.token_usage is not None:
+                error_raw["token_usage"] = {
+                    "input_tokens": result.token_usage.input_tokens,
+                    "output_tokens": result.token_usage.output_tokens,
+                    "total_tokens": result.token_usage.total_tokens,
+                    "estimated_cost_usd": result.token_usage.estimated_cost_usd,
+                    "provider": result.token_usage.provider,
+                }
             return Score(
                 task_name=result.task.name,
                 agent_name=agent_name,
                 value=0.0,
-                raw={
-                    "task_kind": "practical",
-                    "classification": "agent_error",
-                    "changed_files": result.files_changed,
-                    "touchpoint_violations": touchpoint_violations,
-                    "error_message": result.error_message,
-                    "output": result.output,
-                },
+                raw=error_raw,
                 tier=self.tier,
                 status=result.status,
             )
 
-        success_check = run_subprocess(shlex.split(success_command), cwd=result.task.workspace, timeout=result.task.timeout)
-        regression_check = run_subprocess(
-            shlex.split(regression_command), cwd=result.task.workspace, timeout=result.task.timeout
-        )
+        if execution_environment.get("mode") == "containerized":
+            try:
+                success_check = run_check_in_container(
+                    execution_environment=result.raw["execution_environment_contract"],
+                    command=shlex.split(success_command),
+                    workspace=result.task.workspace,
+                    timeout=result.task.timeout,
+                )
+                regression_check = run_check_in_container(
+                    execution_environment=result.raw["execution_environment_contract"],
+                    command=shlex.split(regression_command),
+                    workspace=result.task.workspace,
+                    timeout=result.task.timeout,
+                )
+            except ContainerizedExecutionError as exc:
+                return Score(
+                    task_name=result.task.name,
+                    agent_name=agent_name,
+                    value=0.0,
+                    raw={
+                        "task_kind": "practical",
+                        "classification": "container_error",
+                        "changed_files": result.files_changed,
+                        "touchpoint_violations": touchpoint_violations,
+                        "error_message": str(exc),
+                        "execution_environment": execution_environment,
+                    },
+                    tier=self.tier,
+                    status=RunStatus.SETUP_ERROR,
+                )
+        else:
+            success_check = run_subprocess(
+                shlex.split(success_command), cwd=result.task.workspace, timeout=result.task.timeout
+            )
+            regression_check = run_subprocess(
+                shlex.split(regression_command), cwd=result.task.workspace, timeout=result.task.timeout
+            )
 
         classification = "pass"
         final_status = RunStatus.SUCCESS
@@ -101,7 +150,7 @@ class PracticalTaskSuite(BenchSuite):
             classification = "regression"
             final_status = RunStatus.REGRESSION
 
-        raw = {
+        raw: dict[str, object] = {
             "task_kind": "practical",
             "description": result.task.metadata["description"],
             "classification": classification,
@@ -114,7 +163,17 @@ class PracticalTaskSuite(BenchSuite):
             "regression_command": regression_command,
             "regression_command_exit_code": regression_check.returncode,
             "regression_command_output": combine_output(regression_check),
+            "execution_environment": execution_environment,
+            "duration_ms": result.duration_ms,
         }
+        if result.token_usage is not None:
+            raw["token_usage"] = {
+                "input_tokens": result.token_usage.input_tokens,
+                "output_tokens": result.token_usage.output_tokens,
+                "total_tokens": result.token_usage.total_tokens,
+                "estimated_cost_usd": result.token_usage.estimated_cost_usd,
+                "provider": result.token_usage.provider,
+            }
         if result.error_message:
             raw["agent_error_message"] = result.error_message
         if result.output:

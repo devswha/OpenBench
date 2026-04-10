@@ -60,6 +60,9 @@ class RuntimeSuite(BenchSuite):
             "status": result.status.value,
             "exit_code": result.exit_code,
             "error_message": result.error_message,
+            "execution_environment": result.raw.get(
+                "execution_environment", {"mode": result.task.metadata.get("environment_mode", "native")}
+            ),
         }
         if result.peak_memory_mb is not None:
             raw["peak_memory_mb"] = result.peak_memory_mb

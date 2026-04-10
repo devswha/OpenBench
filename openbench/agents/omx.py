@@ -14,6 +14,11 @@ class OMXAgent(RuntimeCommandAgent):
         super().__init__(command=command or os.environ.get("OPENBENCH_OMX_COMMAND", self.command))
 
     def build_practical_command(self, resolved_command: str, task) -> list[str]:
+        if task.metadata.get("environment_mode") == "containerized":
+            return [
+                resolved_command,
+                task.prompt,
+            ]
         return [
             resolved_command,
             "exec",

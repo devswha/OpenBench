@@ -261,6 +261,8 @@ class StaticHtmlReporter:
         suite_text = ", ".join(report.suites) if report.suites else report.suite
         total_agents = sorted({a.agent_name for a in report.agents} | {a.agent_name for a in report.practical_agents})
         practical_task_count = sum(agent.summary.get("task_count", 0) for agent in report.practical_agents)
+        runtime_mode = report.runtime_execution_environment.get("mode", "n/a")
+        practical_mode = report.practical_execution_environment.get("mode", "n/a")
         return f"""<article class="card">
         <h1>OpenBench Benchmark Report</h1>
         <p>Run ID: <strong>{escape(report.run_id)}</strong></p>
@@ -276,6 +278,14 @@ class StaticHtmlReporter:
       <article class="card">
         <h2>Practical tasks</h2>
         <p><strong>{practical_task_count}</strong></p>
+      </article>
+      <article class="card">
+        <h2>Runtime mode</h2>
+        <p><strong>{escape(str(runtime_mode))}</strong></p>
+      </article>
+      <article class="card">
+        <h2>Practical mode</h2>
+        <p><strong>{escape(str(practical_mode))}</strong></p>
       </article>
       <article class="card">
         <h2>Timestamp</h2>
@@ -315,9 +325,19 @@ class StaticHtmlReporter:
     ) -> str:
         if not report.practical_agents:
             return ""
+        mode_details = ""
+        if report.practical_execution_environment:
+            parts = []
+            for key in ("mode", "base_image", "agent_image", "setup_overhead_ms"):
+                value = report.practical_execution_environment.get(key)
+                if value not in (None, "", {}):
+                    parts.append(f"<div><strong>{escape(key)}</strong>: {escape(str(value))}</div>")
+            if parts:
+                mode_details = f"<div class=\"note\">{''.join(parts)}</div>"
         return f"""
       <section class="card" style="margin-top: 20px;">
         <h2>Practical task summary</h2>
+        {mode_details}
         <table>
           <thead>
             <tr>
@@ -439,13 +459,88 @@ class StaticHtmlReporter:
         if not report.practical_agents:
             return ""
         cards = "".join(self._render_practical_agent_card(agent) for agent in report.practical_agents)
+        comparison_table = self._render_practical_comparison_table(report)
         return f"""
     <div id="tab-practical" class="tab-panel" role="tabpanel" aria-labelledby="btn-practical">
       <article class="card" style="margin-bottom: 16px;">
-        <p class="metric-description">Shows the deterministic practical coding task outcomes for this run, including pass/failure/regression classification, changed files, and allowed touchpoint enforcement.</p>
+        <p class="metric-description">Each agent receives the same prompt and works in an identical sandboxed environment. Three independent axes are measured: <strong>correctness</strong> (did the task pass?), <strong>duration</strong> (time to completion), and <strong>token usage</strong> (cost efficiency). Lower duration and fewer tokens are better, given equal correctness.</p>
       </article>
-      <div class="grid agent-grid">{cards}</div>
+      {comparison_table}
+      <div class="grid agent-grid" style="margin-top: 16px;">{cards}</div>
     </div>
+"""
+
+    def _render_practical_comparison_table(self, report: RuntimeReport) -> str:
+        if not report.practical_agents:
+            return ""
+        task_names: list[str] = []
+        for agent in report.practical_agents:
+            for task in agent.tasks:
+                if task.task_name not in task_names:
+                    task_names.append(task.task_name)
+
+        agent_headers = "".join(
+            f"<th colspan=\"3\">{escape(agent.agent_name)}</th>"
+            for agent in report.practical_agents
+        )
+        sub_headers = "".join(
+            "<th>Result</th><th>Duration</th><th>Tokens</th>"
+            for _ in report.practical_agents
+        )
+
+        rows = []
+        for task_name in task_names:
+            cells = ""
+            for agent in report.practical_agents:
+                task = next((t for t in agent.tasks if t.task_name == task_name), None)
+                if task is None:
+                    cells += "<td>—</td><td>—</td><td>—</td>"
+                    continue
+                if task.status == "success":
+                    chip = '<span class="chip chip-ok">PASS</span>'
+                elif task.status == "regression":
+                    chip = '<span class="chip chip-warn">REGR</span>'
+                else:
+                    chip = '<span class="chip chip-fail">FAIL</span>'
+                cells += f"<td>{chip}</td><td>{escape(task.formatted_duration)}</td><td>{escape(task.formatted_tokens)}</td>"
+            rows.append(f"<tr><td>{escape(task_name)}</td>{cells}</tr>")
+
+        totals_row = "<tr style=\"font-weight: 600; border-top: 2px solid var(--border);\"><td>Total</td>"
+        for agent in report.practical_agents:
+            passed = sum(1 for t in agent.tasks if t.status == "success")
+            total = len(agent.tasks)
+            durations = [t.duration_ms for t in agent.tasks if t.duration_ms is not None]
+            total_dur = sum(durations) if durations else None
+            tokens = [t.token_usage.get("total_tokens", 0) for t in agent.tasks if t.token_usage and isinstance(t.token_usage.get("total_tokens"), (int, float))]
+            total_tok = sum(tokens) if tokens else None
+            dur_str = "—"
+            if total_dur is not None:
+                if total_dur < 1000:
+                    dur_str = f"{total_dur} ms"
+                elif total_dur < 60000:
+                    dur_str = f"{total_dur / 1000:.1f}s"
+                else:
+                    dur_str = f"{int(total_dur // 60000)}m {(total_dur % 60000) / 1000:.0f}s"
+            tok_str = f"{int(total_tok):,}" if total_tok is not None else "—"
+            totals_row += f"<td>{passed}/{total}</td><td>{escape(dur_str)}</td><td>{escape(tok_str)}</td>"
+        totals_row += "</tr>"
+
+        return f"""
+      <article class="card">
+        <h2>Task comparison</h2>
+        <div style="overflow-x: auto;">
+        <table>
+          <thead>
+            <tr><th rowspan="2">Task</th>{agent_headers}</tr>
+            <tr>{sub_headers}</tr>
+          </thead>
+          <tbody>
+            {''.join(rows)}
+            {totals_row}
+          </tbody>
+        </table>
+        </div>
+      </article>
 """
 
     def _render_practical_summary_row(self, agent_report: PracticalAgentReport) -> str:
@@ -482,6 +577,8 @@ class StaticHtmlReporter:
         )
         changed = ", ".join(task.changed_files) if task.changed_files else "none"
         error = f"<div class=\"failure\">Error: {escape(task.error_message)}</div>" if task.error_message else ""
+        duration_line = f"<div>Duration: {escape(task.formatted_duration)}</div>"
+        token_line = f"<div>Tokens: {escape(task.formatted_tokens)}</div>"
         return f"""
 <li>
   <span class="task-label">{escape(task.task_name)}</span>
@@ -490,6 +587,8 @@ class StaticHtmlReporter:
   <div>Classification: {escape(task.classification)}</div>
   <div>Changed files: {escape(changed)}</div>
   <div>Score: {escape(task.formatted_score)}</div>
+  {duration_line}
+  {token_line}
   {violations}
   {error}
 </li>

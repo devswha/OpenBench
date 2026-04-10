@@ -20,6 +20,7 @@
         ],
         "classification": "pass",
         "description": "Fix the single-file arithmetic bug so the calculator tests pass.",
+        "duration_ms": 5200,
         "regression_command": "python -m pytest -q",
         "regression_command_exit_code": 0,
         "regression_command_output": "..                                                                       [100%]\n2 passed in 0.02s",
@@ -27,6 +28,13 @@
         "success_command_exit_code": 0,
         "success_command_output": "..                                                                       [100%]\n2 passed in 0.02s",
         "task_kind": "practical",
+        "token_usage": {
+          "estimated_cost_usd": 0.021,
+          "input_tokens": 1120,
+          "output_tokens": 390,
+          "provider": "anthropic",
+          "total_tokens": 1510
+        },
         "touchpoint_violations": []
       },
       "status": "success",
@@ -46,6 +54,7 @@
         ],
         "classification": "pass",
         "description": "Repair the slugify implementation so the failing unit tests pass.",
+        "duration_ms": 7400,
         "regression_command": "python -m pytest -q",
         "regression_command_exit_code": 0,
         "regression_command_output": "..                                                                       [100%]\n2 passed in 0.01s",
@@ -53,6 +62,13 @@
         "success_command_exit_code": 0,
         "success_command_output": "..                                                                       [100%]\n2 passed in 0.02s",
         "task_kind": "practical",
+        "token_usage": {
+          "estimated_cost_usd": 0.031,
+          "input_tokens": 1540,
+          "output_tokens": 520,
+          "provider": "anthropic",
+          "total_tokens": 2060
+        },
         "touchpoint_violations": []
       },
       "status": "success",
@@ -72,6 +88,7 @@
         ],
         "classification": "pass",
         "description": "Migrate timeout loading to support the new schema while preserving backward compatibility.",
+        "duration_ms": 9800,
         "regression_command": "python -m pytest -q",
         "regression_command_exit_code": 0,
         "regression_command_output": "..                                                                       [100%]\n2 passed in 0.01s",
@@ -79,6 +96,13 @@
         "success_command_exit_code": 0,
         "success_command_output": "..                                                                       [100%]\n2 passed in 0.01s",
         "task_kind": "practical",
+        "token_usage": {
+          "estimated_cost_usd": 0.042,
+          "input_tokens": 1890,
+          "output_tokens": 670,
+          "provider": "anthropic",
+          "total_tokens": 2560
+        },
         "touchpoint_violations": []
       },
       "status": "success",
@@ -100,6 +124,7 @@
         ],
         "classification": "pass",
         "description": "Repair the broken imports after the math_ops module was moved.",
+        "duration_ms": 11200,
         "regression_command": "python -m pytest -q",
         "regression_command_exit_code": 0,
         "regression_command_output": "..                                                                       [100%]\n2 passed in 0.02s",
@@ -107,6 +132,13 @@
         "success_command_exit_code": 0,
         "success_command_output": "..                                                                       [100%]\n2 passed in 0.04s",
         "task_kind": "practical",
+        "token_usage": {
+          "estimated_cost_usd": 0.051,
+          "input_tokens": 1980,
+          "output_tokens": 740,
+          "provider": "anthropic",
+          "total_tokens": 2720
+        },
         "touchpoint_violations": []
       },
       "status": "success",
@@ -126,6 +158,7 @@
         ],
         "classification": "pass",
         "description": "Add the missing email validation and trimming behavior.",
+        "duration_ms": 8600,
         "regression_command": "python -m pytest -q",
         "regression_command_exit_code": 0,
         "regression_command_output": "..                                                                       [100%]\n2 passed in 0.01s",
@@ -133,6 +166,13 @@
         "success_command_exit_code": 0,
         "success_command_output": "..                                                                       [100%]\n2 passed in 0.02s",
         "task_kind": "practical",
+        "token_usage": {
+          "estimated_cost_usd": 0.037,
+          "input_tokens": 1650,
+          "output_tokens": 590,
+          "provider": "anthropic",
+          "total_tokens": 2240
+        },
         "touchpoint_violations": []
       },
       "status": "success",
