@@ -48,111 +48,300 @@ class StaticHtmlReporter:
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>OpenBench Benchmark Report — {escape(report.run_id)}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
   <style>
+    /* ── Design tokens: light mode ── */
     :root {{
       color-scheme: light dark;
-      --bg: #0b1020;
-      --panel: #131a2d;
-      --text: #edf2ff;
-      --muted: #9fb0d8;
-      --border: #2a3558;
-      --accent: #61dafb;
-      --ok: #21c55d;
-      --warn: #f59e0b;
-      --fail: #ef4444;
+      --bg:          hsl(0, 0%, 96%);
+      --panel:       hsl(0, 0%, 100%);
+      --panel-alt:   hsl(0, 0%, 94.7%);
+      --text:        hsl(0, 0%, 3.9%);
+      --muted:       hsl(0, 0%, 45.1%);
+      --border:      hsla(0, 0%, 80%, 0.5);
+      --border-solid: hsl(0, 0%, 80%);
+      --accent-1:    #ef4444;
+      --accent-2:    #dc2626;
+      --accent-glow: rgba(239, 68, 68, 0.25);
+      --ok:          #22c55e;
+      --ok-bg:       rgba(34, 197, 94, 0.1);
+      --ok-text:     #15803d;
+      --warn:        #f59e0b;
+      --warn-bg:     rgba(245, 158, 11, 0.1);
+      --warn-text:   #b45309;
+      --fail:        #ef4444;
+      --fail-bg:     rgba(239, 68, 68, 0.1);
+      --fail-text:   #b91c1c;
+      --shadow-sm:   0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+      --shadow-md:   0 4px 16px rgba(0,0,0,0.06), 0 2px 6px rgba(0,0,0,0.04);
+      --shadow-lg:   0 20px 40px rgba(0,0,0,0.08), 0 8px 16px rgba(0,0,0,0.04);
+      --radius-sm:   8px;
+      --radius-md:   12px;
+      --radius-lg:   16px;
+      --transition:  0.4s cubic-bezier(0.22, 1, 0.36, 1);
     }}
+    /* ── Dark mode overrides ── */
+    @media (prefers-color-scheme: dark) {{
+      :root {{
+        --bg:          hsl(0, 0%, 6%);
+        --panel:       hsl(0, 0%, 10%);
+        --panel-alt:   hsl(0, 0%, 13%);
+        --text:        hsl(0, 0%, 98%);
+        --muted:       hsl(0, 0%, 55%);
+        --border:      hsla(0, 0%, 20%, 0.5);
+        --border-solid: hsl(0, 0%, 20%);
+        --accent-glow: rgba(239, 68, 68, 0.2);
+        --ok-bg:       rgba(34, 197, 94, 0.12);
+        --ok-text:     #4ade80;
+        --warn-bg:     rgba(245, 158, 11, 0.12);
+        --warn-text:   #fbbf24;
+        --fail-bg:     rgba(239, 68, 68, 0.12);
+        --fail-text:   #f87171;
+        --shadow-sm:   0 1px 3px rgba(0,0,0,0.3), 0 1px 2px rgba(0,0,0,0.2);
+        --shadow-md:   0 4px 16px rgba(0,0,0,0.4), 0 2px 6px rgba(0,0,0,0.2);
+        --shadow-lg:   0 20px 40px rgba(0,0,0,0.5), 0 8px 16px rgba(0,0,0,0.3);
+      }}
+    }}
+    /* ── Reset & base ── */
     *, *::before, *::after {{ box-sizing: border-box; }}
     body {{
       margin: 0;
-      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
       background: var(--bg);
       color: var(--text);
-      line-height: 1.5;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
     }}
     main {{
-      max-width: 1120px;
+      max-width: 1100px;
       margin: 0 auto;
-      padding: 32px 20px 64px;
+      padding: 40px 24px 80px;
     }}
-    h1, h2, h3, h4 {{ margin: 0 0 12px; }}
-    p, li {{ color: var(--muted); }}
+    /* ── Typography ── */
+    h1 {{
+      margin: 0 0 8px;
+      font-size: clamp(1.4rem, 3vw, 1.8rem);
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      line-height: 1.15;
+      color: var(--text);
+    }}
+    h2 {{
+      margin: 0 0 16px;
+      font-size: 1.1rem;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+      color: var(--text);
+    }}
+    h3 {{
+      margin: 0 0 8px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+      color: var(--text);
+    }}
+    h4 {{
+      margin: 0 0 8px;
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: var(--text);
+    }}
+    p {{
+      margin: 0 0 8px;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }}
+    p strong {{ color: var(--text); }}
+    li {{ color: var(--muted); font-size: 0.875rem; }}
+    code {{
+      font-family: 'JetBrains Mono', ui-monospace, 'Cascadia Code', 'Fira Code', monospace;
+      font-size: 0.8em;
+      background: var(--panel-alt);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 1px 5px;
+      color: var(--accent-1);
+    }}
+    /* ── Layout ── */
     .grid {{ display: grid; gap: 16px; }}
-    .summary-grid {{ grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }}
+    .summary-grid {{ grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }}
     .agent-grid {{ grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); }}
+    /* ── Cards ── */
     .card {{
       background: var(--panel);
       border: 1px solid var(--border);
-      border-radius: 14px;
-      padding: 18px;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+      border-radius: var(--radius-md);
+      padding: 24px;
+      box-shadow: var(--shadow-sm);
+      transition: transform var(--transition), box-shadow var(--transition), border-color var(--transition);
     }}
-    table {{ width: 100%; border-collapse: collapse; }}
-    th, td {{
+    .card:hover {{
+      transform: translateY(-3px);
+      box-shadow: var(--shadow-lg);
+      border-color: var(--border-solid);
+    }}
+    /* ── Tables ── */
+    table {{ width: 100%; border-collapse: collapse; font-size: 0.875rem; }}
+    thead th {{
       text-align: left;
-      padding: 10px 12px;
+      padding: 10px 14px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--muted);
+      background: var(--panel-alt);
+      border-bottom: 1px solid var(--border-solid);
+    }}
+    tbody td, tbody th {{
+      text-align: left;
+      padding: 10px 14px;
       border-bottom: 1px solid var(--border);
       vertical-align: top;
+      font-family: 'JetBrains Mono', ui-monospace, monospace;
+      font-size: 0.8rem;
     }}
+    tbody tr:last-child td,
+    tbody tr:last-child th {{ border-bottom: none; }}
+    tbody tr:nth-child(even) td,
+    tbody tr:nth-child(even) th {{ background: var(--panel-alt); }}
+    tbody th {{ font-weight: 600; color: var(--text); font-family: inherit; font-size: 0.875rem; }}
+    /* ── Metric & task lists ── */
     .metric-list, .task-list {{ list-style: none; padding: 0; margin: 0; }}
-    .metric-list li, .task-list li {{ margin-bottom: 10px; }}
-    .metric-label, .task-label {{ color: var(--text); font-weight: 600; }}
-    .chip {{
-      display: inline-block;
-      padding: 2px 8px;
-      border-radius: 999px;
-      font-size: 12px;
-      font-weight: 700;
-      margin-left: 8px;
+    .metric-list li, .task-list li {{
+      margin-bottom: 14px;
+      padding-bottom: 14px;
+      border-bottom: 1px solid var(--border);
     }}
-    .chip-ok {{ background: rgba(33, 197, 93, 0.18); color: #7bed9f; }}
-    .chip-fail {{ background: rgba(239, 68, 68, 0.18); color: #fda4af; }}
-    .chip-warn {{ background: rgba(245, 158, 11, 0.18); color: #fde68a; }}
+    .metric-list li:last-child, .task-list li:last-child {{
+      margin-bottom: 0;
+      padding-bottom: 0;
+      border-bottom: none;
+    }}
+    .metric-label, .task-label {{
+      color: var(--text);
+      font-weight: 600;
+      font-size: 0.9rem;
+    }}
+    .metric-list div, .task-list div {{
+      font-family: 'JetBrains Mono', ui-monospace, monospace;
+      font-size: 0.78rem;
+      color: var(--muted);
+      margin-top: 2px;
+    }}
+    /* ── Chips / badges ── */
+    .chip {{
+      display: inline-flex;
+      align-items: center;
+      padding: 2px 10px;
+      border-radius: 999px;
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      margin-left: 8px;
+      vertical-align: middle;
+    }}
+    .chip-ok   {{ background: var(--ok-bg);   color: var(--ok-text);   }}
+    .chip-fail {{ background: var(--fail-bg); color: var(--fail-text); }}
+    .chip-warn {{ background: var(--warn-bg); color: var(--warn-text); }}
+    /* ── Bar chart ── */
     .bar-track {{
       width: 100%;
-      background: rgba(255, 255, 255, 0.06);
+      background: var(--panel-alt);
+      border: 1px solid var(--border);
       border-radius: 999px;
       overflow: hidden;
-      height: 14px;
-      margin-top: 6px;
+      height: 10px;
+      margin-top: 8px;
     }}
     .bar-fill {{
-      height: 14px;
+      height: 10px;
       border-radius: 999px;
-      background: linear-gradient(90deg, #3b82f6, #61dafb);
+      background: linear-gradient(90deg, #ef4444, #f87171);
+      box-shadow: 0 0 8px rgba(239, 68, 68, 0.35);
+      transition: width 0.6s cubic-bezier(0.22, 1, 0.36, 1);
     }}
-    .note {{ font-size: 14px; color: var(--muted); }}
-    .failure {{ color: #fecaca; }}
+    /* ── Notes / muted text ── */
+    .note {{
+      font-size: 0.8rem;
+      color: var(--muted);
+      line-height: 1.6;
+    }}
+    .note div {{ margin-bottom: 4px; }}
+    .note strong {{ color: var(--text); }}
+    .failure {{
+      color: var(--fail-text);
+      font-size: 0.78rem;
+      font-family: 'JetBrains Mono', ui-monospace, monospace;
+    }}
+    /* ── Tab navigation ── */
     .tab-nav {{
       display: flex;
       gap: 4px;
-      padding: 4px;
-      background: var(--panel);
+      padding: 5px;
+      background: hsla(0, 0%, 100%, 0.7);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
       border: 1px solid var(--border);
-      border-radius: 12px;
-      margin-bottom: 24px;
+      border-radius: var(--radius-md);
+      margin-bottom: 28px;
       overflow-x: auto;
       scrollbar-width: none;
+      box-shadow: var(--shadow-sm);
+      position: sticky;
+      top: 12px;
+      z-index: 10;
+    }}
+    @media (prefers-color-scheme: dark) {{
+      .tab-nav {{
+        background: hsla(0, 0%, 8%, 0.8);
+      }}
     }}
     .tab-nav::-webkit-scrollbar {{ display: none; }}
     .tab-btn {{
       flex-shrink: 0;
-      padding: 8px 20px;
+      padding: 8px 18px;
       border: none;
-      border-radius: 8px;
+      border-radius: var(--radius-sm);
       background: transparent;
       color: var(--muted);
-      font-size: 14px;
+      font-size: 0.85rem;
       font-weight: 500;
       cursor: pointer;
-      transition: background 0.15s, color 0.15s;
+      transition: background 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
       white-space: nowrap;
       font-family: inherit;
+      line-height: 1.4;
     }}
-    .tab-btn:hover {{ background: rgba(97, 218, 251, 0.08); color: var(--text); }}
-    .tab-btn.active {{ background: rgba(97, 218, 251, 0.14); color: var(--accent); font-weight: 600; }}
+    .tab-btn:hover {{
+      background: var(--panel-alt);
+      color: var(--text);
+    }}
+    .tab-btn.active {{
+      background: linear-gradient(135deg, #ef4444, #dc2626);
+      color: #fff;
+      font-weight: 600;
+      box-shadow: 0 4px 14px var(--accent-glow);
+    }}
+    /* ── Tab panels ── */
     .tab-panel {{ display: none; }}
-    .tab-panel.active {{ display: block; }}
-    .metric-description {{ font-size: 14px; line-height: 1.6; margin: 0; }}
+    .tab-panel.active {{ display: block; animation: fadeUp 0.35s cubic-bezier(0.22, 1, 0.36, 1) both; }}
+    @keyframes fadeUp {{
+      from {{ opacity: 0; transform: translateY(10px); }}
+      to   {{ opacity: 1; transform: translateY(0); }}
+    }}
+    /* ── Metric description ── */
+    .metric-description {{
+      font-size: 0.875rem;
+      line-height: 1.7;
+      margin: 0;
+      color: var(--muted);
+    }}
+    .metric-description strong {{ color: var(--text); }}
+    /* ── Metric detail grid/cards ── */
     .metric-detail-grid {{
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
@@ -162,24 +351,58 @@ class StaticHtmlReporter:
     .metric-detail-card {{
       background: var(--panel);
       border: 1px solid var(--border);
-      border-radius: 14px;
-      padding: 16px;
+      border-radius: var(--radius-md);
+      padding: 20px;
+      box-shadow: var(--shadow-sm);
+      transition: transform var(--transition), box-shadow var(--transition);
+    }}
+    .metric-detail-card:hover {{
+      transform: translateY(-3px);
+      box-shadow: var(--shadow-lg);
     }}
     .metric-detail-row {{
       display: flex;
       justify-content: space-between;
-      align-items: center;
-      padding: 6px 0;
+      align-items: baseline;
+      padding: 7px 0;
       border-bottom: 1px solid var(--border);
-      font-size: 13px;
+      font-size: 0.8rem;
+      gap: 12px;
     }}
-    .metric-detail-row:last-child {{ border-bottom: none; }}
-    .metric-detail-key {{ color: var(--muted); }}
-    .metric-detail-val {{ color: var(--text); font-weight: 600; font-variant-numeric: tabular-nums; }}
-    code {{ color: #c4b5fd; }}
+    .metric-detail-row:last-child {{ border-bottom: none; padding-bottom: 0; }}
+    .metric-detail-key {{ color: var(--muted); flex-shrink: 0; }}
+    .metric-detail-val {{
+      color: var(--text);
+      font-weight: 600;
+      font-variant-numeric: tabular-nums;
+      font-family: 'JetBrains Mono', ui-monospace, monospace;
+      font-size: 0.78rem;
+      text-align: right;
+    }}
+    /* ── Bar chart label row ── */
+    .bar-label-row {{
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 8px;
+    }}
+    .bar-label-agent {{
+      font-weight: 600;
+      font-size: 0.875rem;
+      color: var(--text);
+    }}
+    .bar-label-value {{
+      font-family: 'JetBrains Mono', ui-monospace, monospace;
+      font-size: 0.78rem;
+      color: var(--muted);
+      white-space: nowrap;
+    }}
+    /* ── Responsive ── */
     @media (max-width: 600px) {{
-      .tab-btn {{ padding: 7px 14px; font-size: 13px; }}
-      main {{ padding: 20px 12px 48px; }}
+      .tab-btn {{ padding: 7px 12px; font-size: 0.8rem; }}
+      main {{ padding: 20px 14px 56px; }}
+      .card {{ padding: 16px; }}
+      .tab-nav {{ top: 8px; }}
     }}
   </style>
 </head>
@@ -417,8 +640,11 @@ class StaticHtmlReporter:
             width = max(0.0, min(metric.normalized_score or 0.0, 100.0))
             bars.append(
                 f"""
-<div style="margin-bottom: 12px;">
-  <div><strong>{escape(agent_report.agent_name)}</strong> — {escape(metric.formatted_raw_value)} (score {escape(metric.formatted_score)})</div>
+<div style="margin-bottom: 16px;">
+  <div class="bar-label-row">
+    <span class="bar-label-agent">{escape(agent_report.agent_name)}</span>
+    <span class="bar-label-value">{escape(metric.formatted_raw_value)} &middot; score {escape(metric.formatted_score)}</span>
+  </div>
   <div class="bar-track"><div class="bar-fill" style="width: {width:.2f}%"></div></div>
 </div>
 """
