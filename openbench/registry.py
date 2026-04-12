@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from openbench.agents.claude_native import ClaudeNativeAgent
+from openbench.agents.codex_native import CodexNativeAgent
 from openbench.agents.omc import OMCAgent
 from openbench.agents.omx import OMXAgent
 from openbench.suites.practical.suite import PracticalTaskSuite
@@ -9,6 +11,8 @@ from openbench.suites.runtime.suite import RuntimeSuite
 AGENT_REGISTRY = {
     OMCAgent.name: OMCAgent,
     OMXAgent.name: OMXAgent,
+    ClaudeNativeAgent.name: ClaudeNativeAgent,
+    CodexNativeAgent.name: CodexNativeAgent,
 }
 
 SUITE_REGISTRY = {

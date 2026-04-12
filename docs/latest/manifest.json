@@ -7,6 +7,10 @@
     "omx": {
       "command": "omx",
       "version": "oh-my-codex v0.12.5"
+    },
+    "codex": {
+      "command": "codex",
+      "version": "OpenAI Codex v0.120.0"
     }
   },
   "environment": {
