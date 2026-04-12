@@ -5,8 +5,26 @@ import re
 
 
 def extract_task_id(prompt: str) -> str | None:
+    # Legacy format: "Task ID: <id>"
     match = re.search(r"Task ID:\s*([A-Za-z0-9_-]+)", prompt)
-    return match.group(1) if match else None
+    if match:
+        return match.group(1)
+    # New neutral format: infer task from editable files section
+    editable_match = re.search(r"## Editable files\s*\n(.+?)(?:\n\n|$)", prompt, re.DOTALL)
+    if not editable_match:
+        return None
+    editable_files = {f.strip() for f in editable_match.group(1).split(",") if f.strip()}
+    if editable_files == {"calculator.py"}:
+        return "single-file-bug-fix"
+    if editable_files == {"text_utils.py"}:
+        return "failing-unit-test-repair"
+    if editable_files == {"config_loader.py"}:
+        return "config-schema-migration"
+    if editable_files == {"app.py", "report.py"}:
+        return "multi-file-import-repair"
+    if editable_files == {"user_service.py"}:
+        return "validation-error-handling-patch"
+    return None
 
 
 def apply_task(task_id: str, workspace: Path) -> None:

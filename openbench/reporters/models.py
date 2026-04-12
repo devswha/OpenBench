@@ -95,6 +95,8 @@ class PracticalTaskResult:
     error_message: str | None = None
     duration_ms: int | None = None
     token_usage: dict[str, int | float | str | None] | None = None
+    difficulty: str | None = None
+    category: str | None = None
 
     @property
     def formatted_score(self) -> str:
@@ -131,6 +133,28 @@ class PracticalAgentReport:
     display_name: str
     summary: dict[str, int]
     tasks: list[PracticalTaskResult] = field(default_factory=list)
+
+
+@dataclass(slots=True)
+class AgentDifficultyMetrics:
+    """Metrics for one agent at one difficulty level."""
+    agent_name: str
+    difficulty: str
+    task_count: int = 0
+    pass_at_1: float = 0.0       # percentage
+    pass_at_5: float | None = None       # percentage; None when only single-run data
+    pass_at_5_strict: float | None = None  # percentage; None when only single-run data
+    tokens_per_success: float | None = None
+    duration_per_success: float | None = None  # in ms
+
+
+@dataclass(slots=True)
+class AgentCategoryMetrics:
+    """Pass@1 for one agent in one category at one difficulty."""
+    agent_name: str
+    difficulty: str
+    category: str
+    pass_at_1: float = 0.0
 
 
 @dataclass(slots=True)

@@ -168,6 +168,8 @@ def _parse_practical_agent_report(agent_name: str, payload: dict[str, Any]) -> P
                 error_message=_optional_str(raw.get("agent_error_message")),
                 duration_ms=int(raw_duration) if isinstance(raw_duration, (int, float)) else None,
                 token_usage=dict(raw_token_usage) if isinstance(raw_token_usage, dict) else None,
+                difficulty=_optional_str(raw.get("difficulty")),
+                category=_optional_str(raw.get("category")),
             )
         )
 

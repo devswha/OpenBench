@@ -56,7 +56,12 @@ class PracticalTaskSuite(BenchSuite):
 
     def prepare_task(self, task: Task, workspace: Path) -> Task:
         fixture = Path(task.metadata["fixture"])
-        shutil.copytree(fixture, workspace, dirs_exist_ok=True)
+        workspace_src = fixture / "workspace"
+        if workspace_src.exists():
+            shutil.copytree(workspace_src, workspace, dirs_exist_ok=True)
+        else:
+            # Backward compat: if no workspace/ subdir, copy everything
+            shutil.copytree(fixture, workspace, dirs_exist_ok=True)
         return task
 
     def evaluate(self, result: RunResult, agent_name: str) -> Score:
@@ -99,6 +104,12 @@ class PracticalTaskSuite(BenchSuite):
                 tier=self.tier,
                 status=result.status,
             )
+
+        # Copy evaluation files (hidden tests) into workspace for verification
+        fixture = Path(result.task.metadata["fixture"])
+        evaluation_src = fixture / "evaluation"
+        if evaluation_src.exists():
+            shutil.copytree(evaluation_src, result.task.workspace, dirs_exist_ok=True)
 
         if execution_environment.get("mode") == "containerized":
             try:
@@ -225,12 +236,16 @@ class PracticalTaskSuite(BenchSuite):
     def _build_prompt(self, contract: PracticalTaskContract) -> str:
         allowed = ", ".join(contract.allowed_touchpoints)
         return (
-            "You are working inside the current fixture repository.\n"
-            f"Task ID: {contract.identifier}\n"
-            f"Task: {contract.description}\n"
-            f"Allowed touchpoints: {allowed}\n"
-            "Make the minimum code changes needed to satisfy the task.\n"
-            "Do not edit files outside the allowed touchpoints.\n"
-            f"Primary success check: {contract.success_command}\n"
-            f"Regression check: {contract.regression_command}\n"
+            "You are given a project in the current working directory.\n"
+            "\n"
+            f"## Task\n"
+            f"{contract.description}\n"
+            "\n"
+            f"## Editable files\n"
+            f"{allowed}\n"
+            "\n"
+            "## Constraints\n"
+            "- Only modify files listed as editable above\n"
+            "- Do not install additional packages\n"
+            "- Your changes will be validated by automated tests (not shown)\n"
         )

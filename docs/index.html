@@ -612,6 +612,36 @@
         <p class="metric-description">Each agent receives the same prompt and works in an identical sandboxed environment. Three independent axes are measured: <strong>correctness</strong> (did the task pass?), <strong>duration</strong> (time to completion), and <strong>token usage</strong> (cost efficiency). Lower duration and fewer tokens are better, given equal correctness.</p>
       </article>
       
+      <h2 style="margin: 20px 0 12px;">Results by difficulty</h2>
+      <article class="card" style="margin-bottom: 16px;">
+        <h3>Easy</h3>
+        <div style="overflow-x: auto;">
+        <table>
+          <thead><tr><th>Metric</th><th>omc</th><th>omx</th></tr></thead>
+          <tbody><tr><td>Pass@1</td><td>100.0%</td><td>100.0%</td></tr><tr><td>Pass@5</td><td>100.0%</td><td>100.0%</td></tr><tr><td>Pass@5 strict</td><td>100.0%</td><td>100.0%</td></tr><tr><td>Tokens/success</td><td>2,092</td><td>1,467</td></tr><tr><td>Duration/success</td><td>7.8s</td><td>5.5s</td></tr></tbody>
+        </table>
+        </div>
+      </article>
+      <article class="card" style="margin-bottom: 16px;">
+        <h3>Medium</h3>
+        <div style="overflow-x: auto;">
+        <table>
+          <thead><tr><th>Metric</th><th>omc</th><th>omx</th></tr></thead>
+          <tbody><tr><td>Pass@1</td><td>100.0%</td><td>100.0%</td></tr><tr><td>Pass@5</td><td>100.0%</td><td>100.0%</td></tr><tr><td>Pass@5 strict</td><td>100.0%</td><td>100.0%</td></tr><tr><td>Tokens/success</td><td>2,720</td><td>2,000</td></tr><tr><td>Duration/success</td><td>11.2s</td><td>8.2s</td></tr></tbody>
+        </table>
+        </div>
+      </article>
+      
+      <h2 style="margin: 20px 0 12px;">Category heatmap (Pass@1)</h2>
+      <article class="card" style="margin-bottom: 16px;">
+        <div style="overflow-x: auto;">
+        <table>
+          <thead><tr><th></th><th>bugfix</th><th>debug</th><th>feature</th></tr></thead>
+          <tbody><tr><th>omc Easy</th><td>100.0%</td><td>—</td><td>100.0%</td></tr><tr><th>omx Easy</th><td>100.0%</td><td>—</td><td>100.0%</td></tr><tr><th>omc Medium</th><td>—</td><td>100.0%</td><td>—</td></tr><tr><th>omx Medium</th><td>—</td><td>100.0%</td><td>—</td></tr></tbody>
+        </table>
+        </div>
+      </article>
+      
       <article class="card">
         <h2>Task comparison</h2>
         <div style="overflow-x: auto;">

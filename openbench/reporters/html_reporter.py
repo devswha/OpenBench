@@ -3,7 +3,15 @@ from __future__ import annotations
 from html import escape
 from pathlib import Path
 
+from openbench.metrics.statistics import (
+    TaskRunResult,
+    compute_task_stats,
+    compute_difficulty_stats,
+    compute_category_stats,
+)
 from openbench.reporters.models import (
+    AgentCategoryMetrics,
+    AgentDifficultyMetrics,
     AgentReport,
     PracticalAgentReport,
     PracticalTaskResult,
@@ -460,15 +468,261 @@ class StaticHtmlReporter:
             return ""
         cards = "".join(self._render_practical_agent_card(agent) for agent in report.practical_agents)
         comparison_table = self._render_practical_comparison_table(report)
+        difficulty_sections = self._render_difficulty_sections(report)
+        category_heatmap = self._render_category_heatmap(report)
         return f"""
     <div id="tab-practical" class="tab-panel" role="tabpanel" aria-labelledby="btn-practical">
       <article class="card" style="margin-bottom: 16px;">
         <p class="metric-description">Each agent receives the same prompt and works in an identical sandboxed environment. Three independent axes are measured: <strong>correctness</strong> (did the task pass?), <strong>duration</strong> (time to completion), and <strong>token usage</strong> (cost efficiency). Lower duration and fewer tokens are better, given equal correctness.</p>
       </article>
+      {difficulty_sections}
+      {category_heatmap}
       {comparison_table}
       <div class="grid agent-grid" style="margin-top: 16px;">{cards}</div>
     </div>
 """
+
+    def _compute_agent_difficulty_metrics(self, report: RuntimeReport) -> list[AgentDifficultyMetrics]:
+        """Compute difficulty-level metrics per agent from existing PracticalAgentReport data."""
+        results: list[AgentDifficultyMetrics] = []
+        for agent in report.practical_agents:
+            # Convert PracticalTaskResult objects to TaskRunResult objects
+            runs: list[TaskRunResult] = []
+            for task in agent.tasks:
+                total_tokens = None
+                if task.token_usage:
+                    raw = task.token_usage.get("total_tokens")
+                    if raw is not None and isinstance(raw, (int, float)):
+                        total_tokens = int(raw)
+                runs.append(TaskRunResult(
+                    task_name=task.task_name,
+                    run_index=0,
+                    success=(task.status == "success"),
+                    duration_ms=task.duration_ms,
+                    total_tokens=total_tokens,
+                    difficulty=getattr(task, "difficulty", None) or "easy",
+                    category=getattr(task, "category", None) or "bugfix",
+                ))
+
+            if not runs:
+                continue
+
+            # Group by task name and compute per-task stats
+            task_runs: dict[str, list[TaskRunResult]] = {}
+            for run in runs:
+                task_runs.setdefault(run.task_name, []).append(run)
+            task_stats_list = [compute_task_stats(task_run_list) for task_run_list in task_runs.values()]
+
+            # Compute per-difficulty stats and map to AgentDifficultyMetrics
+            difficulties_present = sorted({ts.difficulty for ts in task_stats_list})
+            has_multi_run = any(len(v) > 1 for v in task_runs.values())
+            for difficulty in difficulties_present:
+                ds = compute_difficulty_stats(task_stats_list, difficulty)
+                if ds.task_count == 0:
+                    continue
+                results.append(AgentDifficultyMetrics(
+                    agent_name=agent.agent_name,
+                    difficulty=ds.difficulty,
+                    task_count=ds.task_count,
+                    pass_at_1=ds.pass_at_1_rate,
+                    pass_at_5=ds.pass_at_n_rate if has_multi_run else None,
+                    pass_at_5_strict=ds.pass_at_n_strict_rate if has_multi_run else None,
+                    tokens_per_success=ds.mean_tokens_per_success,
+                    duration_per_success=ds.median_duration_per_success,
+                ))
+        return results
+
+    def _compute_agent_category_metrics(self, report: RuntimeReport) -> list[AgentCategoryMetrics]:
+        """Compute Pass@1 per agent per category per difficulty from existing data."""
+        results: list[AgentCategoryMetrics] = []
+        for agent in report.practical_agents:
+            # Convert PracticalTaskResult objects to TaskRunResult objects
+            runs: list[TaskRunResult] = []
+            for task in agent.tasks:
+                total_tokens = None
+                if task.token_usage:
+                    raw = task.token_usage.get("total_tokens")
+                    if raw is not None and isinstance(raw, (int, float)):
+                        total_tokens = int(raw)
+                runs.append(TaskRunResult(
+                    task_name=task.task_name,
+                    run_index=0,
+                    success=(task.status == "success"),
+                    duration_ms=task.duration_ms,
+                    total_tokens=total_tokens,
+                    difficulty=getattr(task, "difficulty", None) or "easy",
+                    category=getattr(task, "category", None) or "bugfix",
+                ))
+
+            if not runs:
+                continue
+
+            # Group by task name and compute per-task stats
+            task_runs: dict[str, list[TaskRunResult]] = {}
+            for run in runs:
+                task_runs.setdefault(run.task_name, []).append(run)
+            task_stats_list = [compute_task_stats(task_run_list) for task_run_list in task_runs.values()]
+
+            # Use compute_category_stats and map to AgentCategoryMetrics
+            for cs in compute_category_stats(task_stats_list):
+                results.append(AgentCategoryMetrics(
+                    agent_name=agent.agent_name,
+                    difficulty=cs.difficulty,
+                    category=cs.category,
+                    pass_at_1=cs.pass_at_1_rate,
+                ))
+        return results
+
+    @staticmethod
+    def _format_duration_ms(duration_ms: float | None) -> str:
+        if duration_ms is None:
+            return "—"
+        if duration_ms < 1000:
+            return f"{duration_ms:.0f} ms"
+        seconds = duration_ms / 1000.0
+        if seconds < 60:
+            return f"{seconds:.1f}s"
+        minutes = int(seconds // 60)
+        remaining = seconds % 60
+        return f"{minutes}m {remaining:.0f}s"
+
+    def _render_difficulty_sections(self, report: RuntimeReport) -> str:
+        if not report.practical_agents:
+            return ""
+        metrics_list = self._compute_agent_difficulty_metrics(report)
+        if not metrics_list:
+            return ""
+
+        difficulties_present: list[str] = []
+        for diff in ("easy", "medium", "hard"):
+            if any(m.difficulty == diff for m in metrics_list):
+                difficulties_present.append(diff)
+        for m in metrics_list:
+            if m.difficulty not in difficulties_present:
+                difficulties_present.append(m.difficulty)
+
+        if not difficulties_present:
+            return ""
+
+        agent_names = [a.agent_name for a in report.practical_agents]
+
+        sections = []
+        for difficulty in difficulties_present:
+            diff_metrics = {m.agent_name: m for m in metrics_list if m.difficulty == difficulty}
+            if not diff_metrics:
+                continue
+
+            agent_headers = "".join(f"<th>{escape(name)}</th>" for name in agent_names)
+
+            def make_row(label: str, values: list[str]) -> str:
+                cells = "".join(f"<td>{escape(v)}</td>" for v in values)
+                return f"<tr><td>{escape(label)}</td>{cells}</tr>"
+
+            pass1_vals = [
+                f"{diff_metrics[n].pass_at_1:.1f}%" if n in diff_metrics else "—"
+                for n in agent_names
+            ]
+            pass5_vals = [
+                (f"{diff_metrics[n].pass_at_5:.1f}%" if diff_metrics[n].pass_at_5 is not None else "—")
+                if n in diff_metrics else "—"
+                for n in agent_names
+            ]
+            pass5s_vals = [
+                (f"{diff_metrics[n].pass_at_5_strict:.1f}%" if diff_metrics[n].pass_at_5_strict is not None else "—")
+                if n in diff_metrics else "—"
+                for n in agent_names
+            ]
+            tok_vals = [
+                (f"{int(diff_metrics[n].tokens_per_success):,}" if diff_metrics[n].tokens_per_success is not None else "—")
+                if n in diff_metrics else "—"
+                for n in agent_names
+            ]
+            dur_vals = [
+                self._format_duration_ms(diff_metrics[n].duration_per_success if n in diff_metrics else None)
+                for n in agent_names
+            ]
+
+            # Only show Pass@5 rows when at least one agent has actual multi-run data
+            show_pass5 = any(v != "—" for v in pass5_vals)
+            show_pass5_strict = any(v != "—" for v in pass5s_vals)
+
+            rows = make_row("Pass@1", pass1_vals)
+            if show_pass5:
+                rows += make_row("Pass@5", pass5_vals)
+            if show_pass5_strict:
+                rows += make_row("Pass@5 strict", pass5s_vals)
+            rows += make_row("Tokens/success", tok_vals)
+            rows += make_row("Duration/success", dur_vals)
+
+            sections.append(f"""
+      <article class="card" style="margin-bottom: 16px;">
+        <h3>{escape(difficulty.capitalize())}</h3>
+        <div style="overflow-x: auto;">
+        <table>
+          <thead><tr><th>Metric</th>{agent_headers}</tr></thead>
+          <tbody>{rows}</tbody>
+        </table>
+        </div>
+      </article>""")
+
+        if not sections:
+            return ""
+        return "\n      <h2 style=\"margin: 20px 0 12px;\">Results by difficulty</h2>" + "".join(sections)
+
+    def _render_category_heatmap(self, report: RuntimeReport) -> str:
+        if not report.practical_agents:
+            return ""
+        cat_metrics = self._compute_agent_category_metrics(report)
+        if not cat_metrics:
+            return ""
+
+        all_categories = sorted({m.category for m in cat_metrics})
+        if len(all_categories) <= 1:
+            return ""
+
+        agent_names = [a.agent_name for a in report.practical_agents]
+        difficulties_present: list[str] = []
+        for diff in ("easy", "medium", "hard"):
+            if any(m.difficulty == diff for m in cat_metrics):
+                difficulties_present.append(diff)
+        for m in cat_metrics:
+            if m.difficulty not in difficulties_present:
+                difficulties_present.append(m.difficulty)
+
+        lookup: dict[tuple[str, str, str], float] = {
+            (m.agent_name, m.difficulty, m.category): m.pass_at_1
+            for m in cat_metrics
+        }
+
+        cat_headers = "".join(f"<th>{escape(c)}</th>" for c in all_categories)
+        rows = []
+        for difficulty in difficulties_present:
+            for agent_name in agent_names:
+                if not any(m.agent_name == agent_name and m.difficulty == difficulty for m in cat_metrics):
+                    continue
+                cells = ""
+                for cat in all_categories:
+                    val = lookup.get((agent_name, difficulty, cat))
+                    if val is None:
+                        cells += "<td>—</td>"
+                    else:
+                        cells += f"<td>{val:.1f}%</td>"
+                row_label = f"{escape(agent_name)} {escape(difficulty.capitalize())}"
+                rows.append(f"<tr><th>{row_label}</th>{cells}</tr>")
+
+        if not rows:
+            return ""
+
+        return f"""
+      <h2 style="margin: 20px 0 12px;">Category heatmap (Pass@1)</h2>
+      <article class="card" style="margin-bottom: 16px;">
+        <div style="overflow-x: auto;">
+        <table>
+          <thead><tr><th></th>{cat_headers}</tr></thead>
+          <tbody>{''.join(rows)}</tbody>
+        </table>
+        </div>
+      </article>"""
 
     def _render_practical_comparison_table(self, report: RuntimeReport) -> str:
         if not report.practical_agents:
