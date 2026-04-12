@@ -210,7 +210,7 @@ class RuntimeCommandAgent(AgentAdapter):
         for path in workspace.rglob("*"):
             if not path.is_file():
                 continue
-            if any(part in {"__pycache__", ".pytest_cache"} for part in path.parts):
+            if any(part in {"__pycache__", ".pytest_cache", ".omx", ".omc", ".claude", ".codex"} for part in path.parts):
                 continue
             relative = path.relative_to(workspace).as_posix()
             digest = hashlib.sha256(path.read_bytes()).hexdigest()
