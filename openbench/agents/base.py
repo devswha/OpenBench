@@ -189,14 +189,17 @@ class RuntimeCommandAgent(AgentAdapter):
             if environment_mode == "containerized"
             else {"mode": "native"}
         )
+        output = combine_output(completed)
+        token_usage = self.parse_token_usage(output) if hasattr(self, "parse_token_usage") else None
         return RunResult(
             task=task,
             status=status,
-            output=combine_output(completed),
+            output=output,
             duration_ms=duration_ms,
             exit_code=completed.returncode,
             error_message=None if completed.returncode == 0 else "Agent command failed",
             files_changed=self._diff_workspace(before, after),
+            token_usage=token_usage,
             raw={
                 "task_kind": "practical",
                 "available": True,

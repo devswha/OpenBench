@@ -1,8 +1,10 @@
 from __future__ import annotations
 
+import json
 import os
 
 from openbench.agents.base import RuntimeCommandAgent
+from openbench.models import TokenUsage
 
 
 class OMCAgent(RuntimeCommandAgent):
@@ -17,7 +19,25 @@ class OMCAgent(RuntimeCommandAgent):
         return [
             resolved_command,
             "-p",
-            "--bare",
             "--dangerously-skip-permissions",
+            "--output-format", "json",
             task.prompt,
         ]
+
+    def parse_token_usage(self, output: str) -> TokenUsage | None:
+        try:
+            data = json.loads(output)
+        except (json.JSONDecodeError, TypeError):
+            return None
+        usage = data.get("usage")
+        if not isinstance(usage, dict):
+            return None
+        input_tokens = int(usage.get("input_tokens", 0))
+        output_tokens = int(usage.get("output_tokens", 0))
+        return TokenUsage(
+            input_tokens=input_tokens,
+            output_tokens=output_tokens,
+            total_tokens=input_tokens + output_tokens,
+            estimated_cost_usd=data.get("total_cost_usd"),
+            provider="anthropic",
+        )
