@@ -879,11 +879,11 @@ class StaticHtmlReporter:
                     task_names.append(task.task_name)
 
         agent_headers = "".join(
-            f"<th colspan=\"4\">{escape(agent.agent_name)}</th>"
+            f"<th colspan=\"5\">{escape(agent.agent_name)}</th>"
             for agent in report.practical_agents
         )
         sub_headers = "".join(
-            "<th>Result</th><th>Duration</th><th>Input tok</th><th>Output tok</th>"
+            "<th>Result</th><th>Duration</th><th>Input tok</th><th>Cached tok</th><th>Output tok</th>"
             for _ in report.practical_agents
         )
 
@@ -893,7 +893,7 @@ class StaticHtmlReporter:
             for agent in report.practical_agents:
                 task = next((t for t in agent.tasks if t.task_name == task_name), None)
                 if task is None:
-                    cells += "<td>—</td><td>—</td><td>—</td><td>—</td>"
+                    cells += "<td>—</td><td>—</td><td>—</td><td>—</td><td>—</td>"
                     continue
                 if task.status == "success":
                     chip = '<span class="chip chip-ok">PASS</span>'
@@ -903,6 +903,7 @@ class StaticHtmlReporter:
                     chip = '<span class="chip chip-fail">FAIL</span>'
                 input_tok = "—"
                 output_tok = "—"
+                cached_tok = "—"
                 if task.token_usage:
                     it = task.token_usage.get("input_tokens")
                     ot = task.token_usage.get("output_tokens")
@@ -910,7 +911,15 @@ class StaticHtmlReporter:
                         input_tok = f"{int(it):,}"
                     if isinstance(ot, (int, float)):
                         output_tok = f"{int(ot):,}"
-                cells += f"<td>{chip}</td><td>{escape(task.formatted_duration)}</td><td>{escape(input_tok)}</td><td>{escape(output_tok)}</td>"
+                agent_log = task.agent_log if hasattr(task, "agent_log") and task.agent_log else None
+                if agent_log:
+                    cc = agent_log.get("cache_creation_input_tokens") or agent_log.get("cached_input_tokens")
+                    cr = agent_log.get("cache_read_input_tokens")
+                    if isinstance(cc, (int, float)) and isinstance(cr, (int, float)):
+                        cached_tok = f"{int(cc + cr):,}"
+                    elif isinstance(cc, (int, float)):
+                        cached_tok = f"{int(cc):,}"
+                cells += f"<td>{chip}</td><td>{escape(task.formatted_duration)}</td><td>{escape(input_tok)}</td><td>{escape(cached_tok)}</td><td>{escape(output_tok)}</td>"
             rows.append(f"<tr><td>{escape(task_name)}</td>{cells}</tr>")
 
         totals_row = "<tr style=\"font-weight: 600; border-top: 2px solid var(--border);\"><td>Total</td>"
@@ -931,9 +940,21 @@ class StaticHtmlReporter:
                     dur_str = f"{total_dur / 1000:.1f}s"
                 else:
                     dur_str = f"{int(total_dur // 60000)}m {(total_dur % 60000) / 1000:.0f}s"
+            cached_vals = []
+            for t in agent.tasks:
+                log = t.agent_log if hasattr(t, "agent_log") and t.agent_log else None
+                if log:
+                    cc = log.get("cache_creation_input_tokens") or log.get("cached_input_tokens")
+                    cr = log.get("cache_read_input_tokens")
+                    if isinstance(cc, (int, float)) and isinstance(cr, (int, float)):
+                        cached_vals.append(int(cc + cr))
+                    elif isinstance(cc, (int, float)):
+                        cached_vals.append(int(cc))
+            total_cached = sum(cached_vals) if cached_vals else None
             input_str = f"{int(total_input):,}" if total_input is not None else "—"
+            cached_str = f"{int(total_cached):,}" if total_cached is not None else "—"
             output_str = f"{int(total_output):,}" if total_output is not None else "—"
-            totals_row += f"<td>{passed}/{total}</td><td>{escape(dur_str)}</td><td>{escape(input_str)}</td><td>{escape(output_str)}</td>"
+            totals_row += f"<td>{passed}/{total}</td><td>{escape(dur_str)}</td><td>{escape(input_str)}</td><td>{escape(cached_str)}</td><td>{escape(output_str)}</td>"
         totals_row += "</tr>"
 
         return f"""
@@ -991,6 +1012,7 @@ class StaticHtmlReporter:
         duration_line = f"<div>Duration: {escape(task.formatted_duration)}</div>"
         input_tok = "—"
         output_tok = "—"
+        cached_tok = "—"
         if task.token_usage:
             it = task.token_usage.get("input_tokens")
             ot = task.token_usage.get("output_tokens")
@@ -998,7 +1020,14 @@ class StaticHtmlReporter:
                 input_tok = f"{int(it):,}"
             if isinstance(ot, (int, float)):
                 output_tok = f"{int(ot):,}"
-        token_line = f"<div>Tokens: {escape(input_tok)} in / {escape(output_tok)} out</div>"
+        if task.agent_log:
+            cc = task.agent_log.get("cache_creation_input_tokens") or task.agent_log.get("cached_input_tokens")
+            cr = task.agent_log.get("cache_read_input_tokens")
+            if isinstance(cc, (int, float)) and isinstance(cr, (int, float)):
+                cached_tok = f"{int(cc + cr):,}"
+            elif isinstance(cc, (int, float)):
+                cached_tok = f"{int(cc):,}"
+        token_line = f"<div>Tokens: {escape(input_tok)} in / {escape(cached_tok)} cached / {escape(output_tok)} out</div>"
         return f"""
 <li>
   <span class="task-label">{escape(task.task_name)}</span>

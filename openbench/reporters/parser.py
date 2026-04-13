@@ -170,6 +170,7 @@ def _parse_practical_agent_report(agent_name: str, payload: dict[str, Any]) -> P
                 token_usage=dict(raw_token_usage) if isinstance(raw_token_usage, dict) else None,
                 difficulty=_optional_str(raw.get("difficulty")),
                 category=_optional_str(raw.get("category")),
+                agent_log=dict(raw["agent_log"]) if isinstance(raw.get("agent_log"), dict) else None,
             )
         )
 

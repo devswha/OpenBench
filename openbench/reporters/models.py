@@ -97,6 +97,7 @@ class PracticalTaskResult:
     token_usage: dict[str, int | float | str | None] | None = None
     difficulty: str | None = None
     category: str | None = None
+    agent_log: dict[str, int | float | str | None] | None = None
 
     @property
     def formatted_score(self) -> str:
