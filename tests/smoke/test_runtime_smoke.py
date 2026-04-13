@@ -11,8 +11,7 @@ def test_readme_quickstart_matches_cli_surface() -> None:
     assert "openbench doctor" in readme
     assert "openbench list agents" in readme
     assert "openbench list suites" in readme
-    assert "openbench run --agent omc --suite runtime" in readme
-    assert "openbench run --agent omx --suite runtime" in readme
+    assert "openbench run --agent claude --suite practical" in readme
     assert "openbench report --format html" in readme
 
 

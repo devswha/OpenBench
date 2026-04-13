@@ -10,8 +10,8 @@ from openbench.utils.process import combine_output, run_subprocess
 def image_name_for_instance(instance: dict) -> str:
     """Derive the SWE-bench Docker image tag from instance metadata."""
     instance_id = instance["instance_id"]
-    # SWE-bench image format: swebench/sweb.eval.x86_64.<instance_id>:latest
-    return f"swebench/sweb.eval.x86_64.{instance_id}:latest"
+    # Epoch AI hosts all SWE-bench Verified images on GHCR
+    return f"ghcr.io/epoch-research/swe-bench.eval.x86_64.{instance_id}:latest"
 
 
 def ensure_image(instance: dict) -> str:

@@ -17,28 +17,38 @@ def parse_fail_to_pass(instance: dict) -> list[str]:
 def check_tests_passed(test_output: str, fail_to_pass: list[str]) -> bool:
     """Check whether all fail-to-pass tests are now passing.
 
-    Simple heuristic: if all test identifiers appear in output without
-    FAILED/ERROR markers, consider them passed.
+    Returns False if: no tests to check, Docker/infrastructure error detected,
+    or any fail_to_pass test has FAIL/ERROR markers in output.
+    Returns True only if test output contains positive signals (passed/ok)
+    and no failure markers for the expected tests.
     """
     if not fail_to_pass:
         return False
 
-    # Check for explicit failures
+    # Infrastructure errors — not a valid test run
+    infra_errors = ["pull access denied", "repository does not exist", "docker:", "No such file or directory"]
+    for marker in infra_errors:
+        if marker in test_output:
+            return False
+
+    # Must have actual test output (not just Docker errors or empty)
+    stripped = test_output.strip()
+    if not stripped:
+        return False
+
+    # Check for explicit failures in fail_to_pass tests
     for test_id in fail_to_pass:
-        # Extract short test name (last component)
         short_name = test_id.rsplit("::", 1)[-1] if "::" in test_id else test_id.rsplit(".", 1)[-1]
-        # If the test appears with FAIL or ERROR, it didn't pass
         for line in test_output.splitlines():
             if short_name in line and ("FAIL" in line or "ERROR" in line):
                 return False
 
-    # If no explicit failures found and test output is non-empty, consider passed
-    # Also check for common success indicators
-    if "passed" in test_output.lower() or "ok" in test_output.lower():
+    # Must have a positive test-passed signal
+    lower = test_output.lower()
+    if "passed" in lower or "\nok\n" in lower or "\nok" == lower[-3:]:
         return True
 
-    # If test output contains no failure markers at all
-    return "FAIL" not in test_output and "ERROR" not in test_output
+    return False
 
 
 def determine_test_command(instance: dict) -> str:

@@ -6,7 +6,7 @@ from openbench.suites.swebench.docker import image_name_for_instance
 def test_image_name_for_instance():
     instance = {"instance_id": "django__django-16379"}
     name = image_name_for_instance(instance)
-    assert name == "swebench/sweb.eval.x86_64.django__django-16379:latest"
+    assert name == "ghcr.io/epoch-research/swe-bench.eval.x86_64.django__django-16379:latest"
 
 
 def test_image_name_for_instance_with_dots():
