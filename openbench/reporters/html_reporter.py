@@ -876,11 +876,11 @@ class StaticHtmlReporter:
                     task_names.append(task.task_name)
 
         agent_headers = "".join(
-            f"<th colspan=\"3\">{escape(agent.agent_name)}</th>"
+            f"<th colspan=\"4\">{escape(agent.agent_name)}</th>"
             for agent in report.practical_agents
         )
         sub_headers = "".join(
-            "<th>Result</th><th>Duration</th><th>Tokens</th>"
+            "<th>Result</th><th>Duration</th><th>Input tok</th><th>Output tok</th>"
             for _ in report.practical_agents
         )
 
@@ -890,7 +890,7 @@ class StaticHtmlReporter:
             for agent in report.practical_agents:
                 task = next((t for t in agent.tasks if t.task_name == task_name), None)
                 if task is None:
-                    cells += "<td>—</td><td>—</td><td>—</td>"
+                    cells += "<td>—</td><td>—</td><td>—</td><td>—</td>"
                     continue
                 if task.status == "success":
                     chip = '<span class="chip chip-ok">PASS</span>'
@@ -898,7 +898,16 @@ class StaticHtmlReporter:
                     chip = '<span class="chip chip-warn">REGR</span>'
                 else:
                     chip = '<span class="chip chip-fail">FAIL</span>'
-                cells += f"<td>{chip}</td><td>{escape(task.formatted_duration)}</td><td>{escape(task.formatted_tokens)}</td>"
+                input_tok = "—"
+                output_tok = "—"
+                if task.token_usage:
+                    it = task.token_usage.get("input_tokens")
+                    ot = task.token_usage.get("output_tokens")
+                    if isinstance(it, (int, float)):
+                        input_tok = f"{int(it):,}"
+                    if isinstance(ot, (int, float)):
+                        output_tok = f"{int(ot):,}"
+                cells += f"<td>{chip}</td><td>{escape(task.formatted_duration)}</td><td>{escape(input_tok)}</td><td>{escape(output_tok)}</td>"
             rows.append(f"<tr><td>{escape(task_name)}</td>{cells}</tr>")
 
         totals_row = "<tr style=\"font-weight: 600; border-top: 2px solid var(--border);\"><td>Total</td>"
@@ -907,8 +916,10 @@ class StaticHtmlReporter:
             total = len(agent.tasks)
             durations = [t.duration_ms for t in agent.tasks if t.duration_ms is not None]
             total_dur = sum(durations) if durations else None
-            tokens = [t.token_usage.get("total_tokens", 0) for t in agent.tasks if t.token_usage and isinstance(t.token_usage.get("total_tokens"), (int, float))]
-            total_tok = sum(tokens) if tokens else None
+            input_toks = [t.token_usage.get("input_tokens", 0) for t in agent.tasks if t.token_usage and isinstance(t.token_usage.get("input_tokens"), (int, float))]
+            output_toks = [t.token_usage.get("output_tokens", 0) for t in agent.tasks if t.token_usage and isinstance(t.token_usage.get("output_tokens"), (int, float))]
+            total_input = sum(input_toks) if input_toks else None
+            total_output = sum(output_toks) if output_toks else None
             dur_str = "—"
             if total_dur is not None:
                 if total_dur < 1000:
@@ -917,8 +928,9 @@ class StaticHtmlReporter:
                     dur_str = f"{total_dur / 1000:.1f}s"
                 else:
                     dur_str = f"{int(total_dur // 60000)}m {(total_dur % 60000) / 1000:.0f}s"
-            tok_str = f"{int(total_tok):,}" if total_tok is not None else "—"
-            totals_row += f"<td>{passed}/{total}</td><td>{escape(dur_str)}</td><td>{escape(tok_str)}</td>"
+            input_str = f"{int(total_input):,}" if total_input is not None else "—"
+            output_str = f"{int(total_output):,}" if total_output is not None else "—"
+            totals_row += f"<td>{passed}/{total}</td><td>{escape(dur_str)}</td><td>{escape(input_str)}</td><td>{escape(output_str)}</td>"
         totals_row += "</tr>"
 
         return f"""
@@ -974,7 +986,16 @@ class StaticHtmlReporter:
         changed = ", ".join(task.changed_files) if task.changed_files else "none"
         error = f"<div class=\"failure\">Error: {escape(task.error_message)}</div>" if task.error_message else ""
         duration_line = f"<div>Duration: {escape(task.formatted_duration)}</div>"
-        token_line = f"<div>Tokens: {escape(task.formatted_tokens)}</div>"
+        input_tok = "—"
+        output_tok = "—"
+        if task.token_usage:
+            it = task.token_usage.get("input_tokens")
+            ot = task.token_usage.get("output_tokens")
+            if isinstance(it, (int, float)):
+                input_tok = f"{int(it):,}"
+            if isinstance(ot, (int, float)):
+                output_tok = f"{int(ot):,}"
+        token_line = f"<div>Tokens: {escape(input_tok)} in / {escape(output_tok)} out</div>"
         return f"""
 <li>
   <span class="task-label">{escape(task.task_name)}</span>
