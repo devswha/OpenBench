@@ -271,6 +271,41 @@
       color: var(--muted);
       white-space: nowrap;
     }
+    /* ── Details / summary (collapsible sections) ── */
+    details {
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: var(--panel);
+      margin-bottom: 8px;
+    }
+    summary {
+      padding: 10px 14px;
+      cursor: pointer;
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: var(--text);
+      list-style: none;
+    }
+    summary::-webkit-details-marker { display: none; }
+    summary::before {
+      content: '▶';
+      display: inline-block;
+      font-size: 0.65rem;
+      margin-right: 8px;
+      color: var(--muted);
+      transition: transform 0.15s;
+    }
+    details[open] > summary::before { transform: rotate(90deg); }
+    summary:hover { color: var(--accent); }
+    details[open] > summary {
+      border-bottom: 1px solid var(--border);
+    }
+    details > :not(summary) {
+      padding: 12px 14px;
+    }
+    details table {
+      margin: 0;
+    }
     /* ── Responsive ── */
     @media (max-width: 600px) {
       .tab-btn { padding: 7px 12px; font-size: 0.8rem; }
@@ -321,9 +356,11 @@
       </article>
       </section>
 
-      <section class="card" style="margin-top: 20px;">
-        <h2>Environment</h2>
-        <table><tbody><tr><th>cpu</th><td>x86_64</td></tr><tr><th>memory_gb</th><td>62.72</td></tr><tr><th>os</th><td>Linux-6.8.0-106-generic-x86_64-with-glibc2.35</td></tr><tr><th>python</th><td>3.11.15</td></tr></tbody></table>
+      <section style="margin-top: 20px;">
+        <details>
+          <summary>Environment</summary>
+          <table><tbody><tr><th>cpu</th><td>x86_64</td></tr><tr><th>memory_gb</th><td>62.72</td></tr><tr><th>os</th><td>Linux-6.8.0-106-generic-x86_64-with-glibc2.35</td></tr><tr><th>python</th><td>3.11.15</td></tr></tbody></table>
+        </details>
       </section>
 
       
@@ -357,8 +394,9 @@
       </section>
 
       <section style="margin-top: 20px;">
-        <h2>Runtime agent cards</h2>
-        <div class="grid agent-grid">
+        <details>
+          <summary>Runtime agent cards</summary>
+          <div class="grid agent-grid" style="padding: 12px 14px;">
 <article class="card">
   <h3>oh-my-claudecode</h3>
   <p>omc</p>
@@ -419,6 +457,7 @@
 </ul>
 </article>
 </div>
+        </details>
       </section>
 
       
@@ -467,8 +506,9 @@
       </section>
 
       <section style="margin-top: 20px;">
-        <h2>Practical task cards</h2>
-        <div class="grid agent-grid">
+        <details>
+          <summary>Practical task cards</summary>
+          <div class="grid agent-grid" style="padding: 12px 14px;">
 <article class="card">
   <h3>Claude Code (native)</h3>
   <p>claude · 5/5 passed</p>
@@ -713,6 +753,7 @@
 </ul>
 </article>
 </div>
+        </details>
       </section>
 
 
@@ -886,6 +927,50 @@
         <p class="metric-description">Each agent receives the same prompt and works in an identical sandboxed environment. Three independent axes are measured: <strong>correctness</strong> (did the task pass?), <strong>duration</strong> (time to completion), and <strong>token usage</strong> (cost efficiency). Lower duration and fewer tokens are better, given equal correctness.</p>
       </article>
       
+      <article class="card" style="margin-bottom: 16px;">
+        <h2>Agent leaderboard</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Agent</th>
+              <th>Pass</th>
+              <th>Time</th>
+              <th>Tokens (in)</th>
+              <th>Tokens (out)</th>
+            </tr>
+          </thead>
+          <tbody>
+<tr>
+  <th>claude</th>
+  <td>5/5</td>
+  <td>1m 33s</td>
+  <td>834k</td>
+  <td>2k</td>
+</tr>
+<tr>
+  <th>codex</th>
+  <td>5/5</td>
+  <td>3m 12s</td>
+  <td>767k</td>
+  <td>8k</td>
+</tr>
+<tr>
+  <th>omc</th>
+  <td>5/5</td>
+  <td>1m 56s</td>
+  <td>880k</td>
+  <td>3k</td>
+</tr>
+<tr>
+  <th>omx</th>
+  <td>5/5</td>
+  <td>4m 39s</td>
+  <td>1.9M</td>
+  <td>10k</td>
+</tr></tbody>
+        </table>
+      </article>
+      
       <h2 style="margin: 20px 0 12px;">Results by difficulty</h2>
       <article class="card" style="margin-bottom: 16px;">
         <h3>Easy</h3>
@@ -898,267 +983,230 @@
       </article>
       
       
-      <article class="card">
-        <h2>Task comparison</h2>
-        <div style="overflow-x: auto;">
-        <table>
-          <thead>
-            <tr><th rowspan="2">Task</th><th colspan="5">claude</th><th colspan="5">codex</th><th colspan="5">omc</th><th colspan="5">omx</th></tr>
-            <tr><th>Result</th><th>Duration</th><th>Total in</th><th>Cached</th><th>Output</th><th>Result</th><th>Duration</th><th>Total in</th><th>Cached</th><th>Output</th><th>Result</th><th>Duration</th><th>Total in</th><th>Cached</th><th>Output</th><th>Result</th><th>Duration</th><th>Total in</th><th>Cached</th><th>Output</th></tr>
-          </thead>
-          <tbody>
-            <tr><td>single-file-bug-fix</td><td><span class="chip chip-ok">PASS</span></td><td>12.5s</td><td>131,058</td><td>131,050</td><td>241</td><td><span class="chip chip-ok">PASS</span></td><td>27.8s</td><td>121,980</td><td>100,864</td><td>1,000</td><td><span class="chip chip-ok">PASS</span></td><td>14.2s</td><td>131,061</td><td>131,053</td><td>246</td><td><span class="chip chip-ok">PASS</span></td><td>37.0s</td><td>256,535</td><td>229,504</td><td>1,291</td></tr><tr><td>failing-unit-test-repair</td><td><span class="chip chip-ok">PASS</span></td><td>15.4s</td><td>175,674</td><td>175,663</td><td>467</td><td><span class="chip chip-ok">PASS</span></td><td>34.7s</td><td>148,964</td><td>131,584</td><td>1,756</td><td><span class="chip chip-ok">PASS</span></td><td>21.3s</td><td>175,699</td><td>175,688</td><td>471</td><td><span class="chip chip-ok">PASS</span></td><td>1m 24s</td><td>571,645</td><td>543,104</td><td>2,870</td></tr><tr><td>config-schema-migration</td><td><span class="chip chip-ok">PASS</span></td><td>20.2s</td><td>175,569</td><td>175,558</td><td>467</td><td><span class="chip chip-ok">PASS</span></td><td>40.6s</td><td>174,048</td><td>152,320</td><td>1,602</td><td><span class="chip chip-ok">PASS</span></td><td>33.0s</td><td>221,296</td><td>221,282</td><td>742</td><td><span class="chip chip-ok">PASS</span></td><td>54.3s</td><td>359,063</td><td>315,136</td><td>2,184</td></tr><tr><td>multi-file-import-repair</td><td><span class="chip chip-ok">PASS</span></td><td>20.3s</td><td>175,877</td><td>175,866</td><td>542</td><td><span class="chip chip-ok">PASS</span></td><td>44.5s</td><td>121,834</td><td>82,048</td><td>1,360</td><td><span class="chip chip-ok">PASS</span></td><td>22.3s</td><td>176,123</td><td>176,112</td><td>560</td><td><span class="chip chip-ok">PASS</span></td><td>43.4s</td><td>314,753</td><td>295,680</td><td>1,500</td></tr><tr><td>validation-error-handling-patch</td><td><span class="chip chip-ok">PASS</span></td><td>24.4s</td><td>175,893</td><td>175,882</td><td>692</td><td><span class="chip chip-ok">PASS</span></td><td>44.4s</td><td>199,933</td><td>178,048</td><td>1,905</td><td><span class="chip chip-ok">PASS</span></td><td>25.2s</td><td>175,797</td><td>175,786</td><td>803</td><td><span class="chip chip-ok">PASS</span></td><td>1m 0s</td><td>358,975</td><td>344,960</td><td>2,568</td></tr>
-            <tr style="font-weight: 600; border-top: 2px solid var(--border);"><td>Total</td><td>5/5</td><td>1m 33s</td><td>834,071</td><td>834,019</td><td>2,409</td><td>5/5</td><td>3m 12s</td><td>766,759</td><td>644,864</td><td>7,623</td><td>5/5</td><td>1m 56s</td><td>879,976</td><td>879,921</td><td>2,822</td><td>5/5</td><td>4m 39s</td><td>1,860,971</td><td>1,728,384</td><td>10,413</td></tr>
-          </tbody>
-        </table>
-        </div>
-      </article>
-
-      <div class="grid agent-grid" style="margin-top: 16px;">
-<article class="card">
-  <h3>Claude Code (native)</h3>
-  <p>claude · 5/5 passed</p>
-  <ul class="task-list">
-<li>
-  <span class="task-label">single-file-bug-fix</span>
-  <span class="chip chip-ok">SUCCESS</span>
-  <div>Fix the single-file arithmetic bug so the calculator tests pass.</div>
-  <div>Changed files: calculator.py</div>
-  <div>Duration: 12.5s</div>
-  <div>Tokens: 131,058 in / 131,050 cached / 241 out</div>
-  
-  
-</li>
-
-<li>
-  <span class="task-label">failing-unit-test-repair</span>
-  <span class="chip chip-ok">SUCCESS</span>
-  <div>Repair the slugify implementation so the failing unit tests pass.</div>
-  <div>Changed files: text_utils.py</div>
-  <div>Duration: 15.4s</div>
-  <div>Tokens: 175,674 in / 175,663 cached / 467 out</div>
-  
-  
-</li>
-
-<li>
-  <span class="task-label">config-schema-migration</span>
-  <span class="chip chip-ok">SUCCESS</span>
-  <div>Migrate timeout loading to support the new schema while preserving backward compatibility.</div>
-  <div>Changed files: config_loader.py</div>
-  <div>Duration: 20.2s</div>
-  <div>Tokens: 175,569 in / 175,558 cached / 467 out</div>
-  
-  
-</li>
-
-<li>
-  <span class="task-label">multi-file-import-repair</span>
-  <span class="chip chip-ok">SUCCESS</span>
-  <div>Repair the broken imports after the math_ops module was moved.</div>
-  <div>Changed files: app.py, report.py</div>
-  <div>Duration: 20.3s</div>
-  <div>Tokens: 175,877 in / 175,866 cached / 542 out</div>
-  
-  
-</li>
-
-<li>
-  <span class="task-label">validation-error-handling-patch</span>
-  <span class="chip chip-ok">SUCCESS</span>
-  <div>Add the missing email validation and trimming behavior.</div>
-  <div>Changed files: user_service.py</div>
-  <div>Duration: 24.4s</div>
-  <div>Tokens: 175,893 in / 175,882 cached / 692 out</div>
-  
-  
-</li>
-</ul>
-</article>
-
-<article class="card">
-  <h3>Codex CLI (native)</h3>
-  <p>codex · 5/5 passed</p>
-  <ul class="task-list">
-<li>
-  <span class="task-label">single-file-bug-fix</span>
-  <span class="chip chip-ok">SUCCESS</span>
-  <div>Fix the single-file arithmetic bug so the calculator tests pass.</div>
-  <div>Changed files: calculator.py</div>
-  <div>Duration: 27.8s</div>
-  <div>Tokens: 121,980 in / 100,864 cached / 1,000 out</div>
-  
-  
-</li>
-
-<li>
-  <span class="task-label">failing-unit-test-repair</span>
-  <span class="chip chip-ok">SUCCESS</span>
-  <div>Repair the slugify implementation so the failing unit tests pass.</div>
-  <div>Changed files: text_utils.py</div>
-  <div>Duration: 34.7s</div>
-  <div>Tokens: 148,964 in / 131,584 cached / 1,756 out</div>
-  
-  
-</li>
-
-<li>
-  <span class="task-label">config-schema-migration</span>
-  <span class="chip chip-ok">SUCCESS</span>
-  <div>Migrate timeout loading to support the new schema while preserving backward compatibility.</div>
-  <div>Changed files: config_loader.py</div>
-  <div>Duration: 40.6s</div>
-  <div>Tokens: 174,048 in / 152,320 cached / 1,602 out</div>
-  
-  
-</li>
-
-<li>
-  <span class="task-label">multi-file-import-repair</span>
-  <span class="chip chip-ok">SUCCESS</span>
-  <div>Repair the broken imports after the math_ops module was moved.</div>
-  <div>Changed files: app.py, report.py</div>
-  <div>Duration: 44.5s</div>
-  <div>Tokens: 121,834 in / 82,048 cached / 1,360 out</div>
-  
-  
-</li>
-
-<li>
-  <span class="task-label">validation-error-handling-patch</span>
-  <span class="chip chip-ok">SUCCESS</span>
-  <div>Add the missing email validation and trimming behavior.</div>
-  <div>Changed files: user_service.py</div>
-  <div>Duration: 44.4s</div>
-  <div>Tokens: 199,933 in / 178,048 cached / 1,905 out</div>
-  
-  
-</li>
-</ul>
-</article>
-
-<article class="card">
-  <h3>oh-my-claudecode</h3>
-  <p>omc · 5/5 passed</p>
-  <ul class="task-list">
-<li>
-  <span class="task-label">single-file-bug-fix</span>
-  <span class="chip chip-ok">SUCCESS</span>
-  <div>Fix the single-file arithmetic bug so the calculator tests pass.</div>
-  <div>Changed files: calculator.py</div>
-  <div>Duration: 14.2s</div>
-  <div>Tokens: 131,061 in / 131,053 cached / 246 out</div>
-  
-  
-</li>
-
-<li>
-  <span class="task-label">failing-unit-test-repair</span>
-  <span class="chip chip-ok">SUCCESS</span>
-  <div>Repair the slugify implementation so the failing unit tests pass.</div>
-  <div>Changed files: text_utils.py</div>
-  <div>Duration: 21.3s</div>
-  <div>Tokens: 175,699 in / 175,688 cached / 471 out</div>
-  
-  
-</li>
-
-<li>
-  <span class="task-label">config-schema-migration</span>
-  <span class="chip chip-ok">SUCCESS</span>
-  <div>Migrate timeout loading to support the new schema while preserving backward compatibility.</div>
-  <div>Changed files: config_loader.py</div>
-  <div>Duration: 33.0s</div>
-  <div>Tokens: 221,296 in / 221,282 cached / 742 out</div>
-  
-  
-</li>
-
-<li>
-  <span class="task-label">multi-file-import-repair</span>
-  <span class="chip chip-ok">SUCCESS</span>
-  <div>Repair the broken imports after the math_ops module was moved.</div>
-  <div>Changed files: app.py, report.py</div>
-  <div>Duration: 22.3s</div>
-  <div>Tokens: 176,123 in / 176,112 cached / 560 out</div>
-  
-  
-</li>
-
-<li>
-  <span class="task-label">validation-error-handling-patch</span>
-  <span class="chip chip-ok">SUCCESS</span>
-  <div>Add the missing email validation and trimming behavior.</div>
-  <div>Changed files: user_service.py</div>
-  <div>Duration: 25.2s</div>
-  <div>Tokens: 175,797 in / 175,786 cached / 803 out</div>
-  
-  
-</li>
-</ul>
-</article>
-
-<article class="card">
-  <h3>oh-my-codex</h3>
-  <p>omx · 5/5 passed</p>
-  <ul class="task-list">
-<li>
-  <span class="task-label">single-file-bug-fix</span>
-  <span class="chip chip-ok">SUCCESS</span>
-  <div>Fix the single-file arithmetic bug so the calculator tests pass.</div>
-  <div>Changed files: calculator.py</div>
-  <div>Duration: 37.0s</div>
-  <div>Tokens: 256,535 in / 229,504 cached / 1,291 out</div>
-  
-  
-</li>
-
-<li>
-  <span class="task-label">failing-unit-test-repair</span>
-  <span class="chip chip-ok">SUCCESS</span>
-  <div>Repair the slugify implementation so the failing unit tests pass.</div>
-  <div>Changed files: text_utils.py</div>
-  <div>Duration: 1m 24s</div>
-  <div>Tokens: 571,645 in / 543,104 cached / 2,870 out</div>
-  
-  
-</li>
-
-<li>
-  <span class="task-label">config-schema-migration</span>
-  <span class="chip chip-ok">SUCCESS</span>
-  <div>Migrate timeout loading to support the new schema while preserving backward compatibility.</div>
-  <div>Changed files: config_loader.py</div>
-  <div>Duration: 54.3s</div>
-  <div>Tokens: 359,063 in / 315,136 cached / 2,184 out</div>
-  
-  
-</li>
-
-<li>
-  <span class="task-label">multi-file-import-repair</span>
-  <span class="chip chip-ok">SUCCESS</span>
-  <div>Repair the broken imports after the math_ops module was moved.</div>
-  <div>Changed files: app.py, report.py</div>
-  <div>Duration: 43.4s</div>
-  <div>Tokens: 314,753 in / 295,680 cached / 1,500 out</div>
-  
-  
-</li>
-
-<li>
-  <span class="task-label">validation-error-handling-patch</span>
-  <span class="chip chip-ok">SUCCESS</span>
-  <div>Add the missing email validation and trimming behavior.</div>
-  <div>Changed files: user_service.py</div>
-  <div>Duration: 1m 0s</div>
-  <div>Tokens: 358,975 in / 344,960 cached / 2,568 out</div>
-  
-  
-</li>
-</ul>
-</article>
-</div>
+      <section style="margin-top: 16px;">
+        <h2 style="margin: 0 0 12px; font-size: 1rem; font-weight: 600;">Per-task breakdown</h2>
+        
+        <details>
+          <summary>single-file-bug-fix — all pass</summary>
+          <table>
+            <thead>
+              <tr>
+                <th>Agent</th>
+                <th>Result</th>
+                <th>Duration</th>
+                <th>Total in</th>
+                <th>Cached</th>
+                <th>Output</th>
+              </tr>
+            </thead>
+            <tbody><tr>
+  <th>claude</th>
+  <td><span class="chip chip-ok">PASS</span></td>
+  <td>12.5s</td>
+  <td>131k</td>
+  <td>131k</td>
+  <td>241</td>
+</tr><tr>
+  <th>codex</th>
+  <td><span class="chip chip-ok">PASS</span></td>
+  <td>27.8s</td>
+  <td>122k</td>
+  <td>101k</td>
+  <td>1k</td>
+</tr><tr>
+  <th>omc</th>
+  <td><span class="chip chip-ok">PASS</span></td>
+  <td>14.2s</td>
+  <td>131k</td>
+  <td>131k</td>
+  <td>246</td>
+</tr><tr>
+  <th>omx</th>
+  <td><span class="chip chip-ok">PASS</span></td>
+  <td>37.0s</td>
+  <td>257k</td>
+  <td>230k</td>
+  <td>1k</td>
+</tr></tbody>
+          </table>
+        </details>
+        <details>
+          <summary>failing-unit-test-repair — all pass</summary>
+          <table>
+            <thead>
+              <tr>
+                <th>Agent</th>
+                <th>Result</th>
+                <th>Duration</th>
+                <th>Total in</th>
+                <th>Cached</th>
+                <th>Output</th>
+              </tr>
+            </thead>
+            <tbody><tr>
+  <th>claude</th>
+  <td><span class="chip chip-ok">PASS</span></td>
+  <td>15.4s</td>
+  <td>176k</td>
+  <td>176k</td>
+  <td>467</td>
+</tr><tr>
+  <th>codex</th>
+  <td><span class="chip chip-ok">PASS</span></td>
+  <td>34.7s</td>
+  <td>149k</td>
+  <td>132k</td>
+  <td>2k</td>
+</tr><tr>
+  <th>omc</th>
+  <td><span class="chip chip-ok">PASS</span></td>
+  <td>21.3s</td>
+  <td>176k</td>
+  <td>176k</td>
+  <td>471</td>
+</tr><tr>
+  <th>omx</th>
+  <td><span class="chip chip-ok">PASS</span></td>
+  <td>1m 24s</td>
+  <td>572k</td>
+  <td>543k</td>
+  <td>3k</td>
+</tr></tbody>
+          </table>
+        </details>
+        <details>
+          <summary>config-schema-migration — all pass</summary>
+          <table>
+            <thead>
+              <tr>
+                <th>Agent</th>
+                <th>Result</th>
+                <th>Duration</th>
+                <th>Total in</th>
+                <th>Cached</th>
+                <th>Output</th>
+              </tr>
+            </thead>
+            <tbody><tr>
+  <th>claude</th>
+  <td><span class="chip chip-ok">PASS</span></td>
+  <td>20.2s</td>
+  <td>176k</td>
+  <td>176k</td>
+  <td>467</td>
+</tr><tr>
+  <th>codex</th>
+  <td><span class="chip chip-ok">PASS</span></td>
+  <td>40.6s</td>
+  <td>174k</td>
+  <td>152k</td>
+  <td>2k</td>
+</tr><tr>
+  <th>omc</th>
+  <td><span class="chip chip-ok">PASS</span></td>
+  <td>33.0s</td>
+  <td>221k</td>
+  <td>221k</td>
+  <td>742</td>
+</tr><tr>
+  <th>omx</th>
+  <td><span class="chip chip-ok">PASS</span></td>
+  <td>54.3s</td>
+  <td>359k</td>
+  <td>315k</td>
+  <td>2k</td>
+</tr></tbody>
+          </table>
+        </details>
+        <details>
+          <summary>multi-file-import-repair — all pass</summary>
+          <table>
+            <thead>
+              <tr>
+                <th>Agent</th>
+                <th>Result</th>
+                <th>Duration</th>
+                <th>Total in</th>
+                <th>Cached</th>
+                <th>Output</th>
+              </tr>
+            </thead>
+            <tbody><tr>
+  <th>claude</th>
+  <td><span class="chip chip-ok">PASS</span></td>
+  <td>20.3s</td>
+  <td>176k</td>
+  <td>176k</td>
+  <td>542</td>
+</tr><tr>
+  <th>codex</th>
+  <td><span class="chip chip-ok">PASS</span></td>
+  <td>44.5s</td>
+  <td>122k</td>
+  <td>82k</td>
+  <td>1k</td>
+</tr><tr>
+  <th>omc</th>
+  <td><span class="chip chip-ok">PASS</span></td>
+  <td>22.3s</td>
+  <td>176k</td>
+  <td>176k</td>
+  <td>560</td>
+</tr><tr>
+  <th>omx</th>
+  <td><span class="chip chip-ok">PASS</span></td>
+  <td>43.4s</td>
+  <td>315k</td>
+  <td>296k</td>
+  <td>2k</td>
+</tr></tbody>
+          </table>
+        </details>
+        <details>
+          <summary>validation-error-handling-patch — all pass</summary>
+          <table>
+            <thead>
+              <tr>
+                <th>Agent</th>
+                <th>Result</th>
+                <th>Duration</th>
+                <th>Total in</th>
+                <th>Cached</th>
+                <th>Output</th>
+              </tr>
+            </thead>
+            <tbody><tr>
+  <th>claude</th>
+  <td><span class="chip chip-ok">PASS</span></td>
+  <td>24.4s</td>
+  <td>176k</td>
+  <td>176k</td>
+  <td>692</td>
+</tr><tr>
+  <th>codex</th>
+  <td><span class="chip chip-ok">PASS</span></td>
+  <td>44.4s</td>
+  <td>200k</td>
+  <td>178k</td>
+  <td>2k</td>
+</tr><tr>
+  <th>omc</th>
+  <td><span class="chip chip-ok">PASS</span></td>
+  <td>25.2s</td>
+  <td>176k</td>
+  <td>176k</td>
+  <td>803</td>
+</tr><tr>
+  <th>omx</th>
+  <td><span class="chip chip-ok">PASS</span></td>
+  <td>1m 0s</td>
+  <td>359k</td>
+  <td>345k</td>
+  <td>3k</td>
+</tr></tbody>
+          </table>
+        </details>
+      </section>
     </div>
 
     

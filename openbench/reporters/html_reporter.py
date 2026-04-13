@@ -316,6 +316,41 @@ class StaticHtmlReporter:
       color: var(--muted);
       white-space: nowrap;
     }}
+    /* ── Details / summary (collapsible sections) ── */
+    details {{
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: var(--panel);
+      margin-bottom: 8px;
+    }}
+    summary {{
+      padding: 10px 14px;
+      cursor: pointer;
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: var(--text);
+      list-style: none;
+    }}
+    summary::-webkit-details-marker {{ display: none; }}
+    summary::before {{
+      content: '▶';
+      display: inline-block;
+      font-size: 0.65rem;
+      margin-right: 8px;
+      color: var(--muted);
+      transition: transform 0.15s;
+    }}
+    details[open] > summary::before {{ transform: rotate(90deg); }}
+    summary:hover {{ color: var(--accent); }}
+    details[open] > summary {{
+      border-bottom: 1px solid var(--border);
+    }}
+    details > :not(summary) {{
+      padding: 12px 14px;
+    }}
+    details table {{
+      margin: 0;
+    }}
     /* ── Responsive ── */
     @media (max-width: 600px) {{
       .tab-btn {{ padding: 7px 12px; font-size: 0.8rem; }}
@@ -334,9 +369,11 @@ class StaticHtmlReporter:
         {summary_cards}
       </section>
 
-      <section class="card" style="margin-top: 20px;">
-        <h2>Environment</h2>
-        <table><tbody>{environment_rows}</tbody></table>
+      <section style="margin-top: 20px;">
+        <details>
+          <summary>Environment</summary>
+          <table><tbody>{environment_rows}</tbody></table>
+        </details>
       </section>
 
       {self._render_runtime_overview(report, runtime_comparison_rows, runtime_agent_cards)}
@@ -462,8 +499,10 @@ class StaticHtmlReporter:
       </section>
 
       <section style="margin-top: 20px;">
-        <h2>Runtime agent cards</h2>
-        <div class="grid agent-grid">{agent_cards}</div>
+        <details>
+          <summary>Runtime agent cards</summary>
+          <div class="grid agent-grid" style="padding: 12px 14px;">{agent_cards}</div>
+        </details>
       </section>
 """
 
@@ -502,8 +541,10 @@ class StaticHtmlReporter:
       </section>
 
       <section style="margin-top: 20px;">
-        <h2>Practical task cards</h2>
-        <div class="grid agent-grid">{agent_cards}</div>
+        <details>
+          <summary>Practical task cards</summary>
+          <div class="grid agent-grid" style="padding: 12px 14px;">{agent_cards}</div>
+        </details>
       </section>
 """
 
@@ -611,8 +652,8 @@ class StaticHtmlReporter:
     def _render_practical_tab_panel(self, report: RuntimeReport) -> str:
         if not report.practical_agents:
             return ""
-        cards = "".join(self._render_practical_agent_card(agent) for agent in report.practical_agents)
-        comparison_table = self._render_practical_comparison_table(report)
+        leaderboard = self._render_practical_leaderboard(report)
+        per_task_details = self._render_practical_per_task_details(report)
         difficulty_sections = self._render_difficulty_sections(report)
         category_heatmap = self._render_category_heatmap(report)
         return f"""
@@ -620,12 +661,177 @@ class StaticHtmlReporter:
       <article class="card" style="margin-bottom: 16px;">
         <p class="metric-description">Each agent receives the same prompt and works in an identical sandboxed environment. Three independent axes are measured: <strong>correctness</strong> (did the task pass?), <strong>duration</strong> (time to completion), and <strong>token usage</strong> (cost efficiency). Lower duration and fewer tokens are better, given equal correctness.</p>
       </article>
+      {leaderboard}
       {difficulty_sections}
       {category_heatmap}
-      {comparison_table}
-      <div class="grid agent-grid" style="margin-top: 16px;">{cards}</div>
+      {per_task_details}
     </div>
 """
+
+    def _render_practical_leaderboard(self, report: RuntimeReport) -> str:
+        """Render a compact agent leaderboard table (always visible)."""
+        rows = []
+        for agent in report.practical_agents:
+            passed = sum(1 for t in agent.tasks if t.status == "success")
+            total = len(agent.tasks)
+            pass_str = f"{passed}/{total}"
+
+            durations = [t.duration_ms for t in agent.tasks if t.duration_ms is not None]
+            total_dur = sum(durations) if durations else None
+            dur_str = self._format_duration_ms(total_dur)
+
+            sum_input = 0
+            sum_output = 0
+            has_tokens = False
+            for t in agent.tasks:
+                raw_in = 0
+                raw_cached = 0
+                if t.token_usage:
+                    it = t.token_usage.get("input_tokens")
+                    ot = t.token_usage.get("output_tokens")
+                    if isinstance(it, (int, float)):
+                        raw_in = int(it)
+                    if isinstance(ot, (int, float)):
+                        sum_output += int(ot)
+                        has_tokens = True
+                log = t.agent_log or {}
+                cc = log.get("cache_creation_input_tokens") if "cache_creation_input_tokens" in log else log.get("cached_input_tokens")
+                cr = log.get("cache_read_input_tokens")
+                if isinstance(cc, (int, float)) and isinstance(cr, (int, float)):
+                    raw_cached = int(cc) + int(cr)
+                elif isinstance(cc, (int, float)):
+                    raw_cached = int(cc)
+                normalized = raw_in + raw_cached if raw_cached > raw_in else raw_in
+                sum_input += normalized
+
+            input_str = self._format_tokens_short(sum_input) if has_tokens else "—"
+            output_str = self._format_tokens_short(sum_output) if has_tokens else "—"
+
+            rows.append(f"""
+<tr>
+  <th>{escape(agent.agent_name)}</th>
+  <td>{escape(pass_str)}</td>
+  <td>{escape(dur_str)}</td>
+  <td>{escape(input_str)}</td>
+  <td>{escape(output_str)}</td>
+</tr>""")
+
+        return f"""
+      <article class="card" style="margin-bottom: 16px;">
+        <h2>Agent leaderboard</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Agent</th>
+              <th>Pass</th>
+              <th>Time</th>
+              <th>Tokens (in)</th>
+              <th>Tokens (out)</th>
+            </tr>
+          </thead>
+          <tbody>{''.join(rows)}</tbody>
+        </table>
+      </article>"""
+
+    def _render_practical_per_task_details(self, report: RuntimeReport) -> str:
+        """Render per-task collapsible details with agents as rows (vertical layout)."""
+        task_names: list[str] = []
+        for agent in report.practical_agents:
+            for task in agent.tasks:
+                if task.task_name not in task_names:
+                    task_names.append(task.task_name)
+
+        if not task_names:
+            return ""
+
+        task_blocks = []
+        for task_name in task_names:
+            # Determine summary status label
+            statuses = []
+            for agent in report.practical_agents:
+                task = next((t for t in agent.tasks if t.task_name == task_name), None)
+                if task:
+                    statuses.append(task.status)
+
+            if statuses:
+                if all(s == "success" for s in statuses):
+                    status_label = "all pass"
+                elif all(s != "success" for s in statuses):
+                    status_label = "all fail"
+                else:
+                    passed = sum(1 for s in statuses if s == "success")
+                    status_label = f"{passed}/{len(statuses)} pass"
+            else:
+                status_label = ""
+
+            rows = []
+            for agent in report.practical_agents:
+                task = next((t for t in agent.tasks if t.task_name == task_name), None)
+                if task is None:
+                    rows.append(f"<tr><th>{escape(agent.agent_name)}</th><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr>")
+                    continue
+
+                if task.status == "success":
+                    chip = '<span class="chip chip-ok">PASS</span>'
+                elif task.status == "regression":
+                    chip = '<span class="chip chip-warn">REGR</span>'
+                else:
+                    chip = '<span class="chip chip-fail">FAIL</span>'
+
+                raw_input = 0
+                raw_cached = 0
+                output_tok = "—"
+                if task.token_usage:
+                    it = task.token_usage.get("input_tokens")
+                    ot = task.token_usage.get("output_tokens")
+                    if isinstance(it, (int, float)):
+                        raw_input = int(it)
+                    if isinstance(ot, (int, float)):
+                        output_tok = self._format_tokens_short(int(ot))
+                log = task.agent_log or {}
+                cc = log.get("cache_creation_input_tokens") if "cache_creation_input_tokens" in log else log.get("cached_input_tokens")
+                cr = log.get("cache_read_input_tokens")
+                if isinstance(cc, (int, float)) and isinstance(cr, (int, float)):
+                    raw_cached = int(cc) + int(cr)
+                elif isinstance(cc, (int, float)):
+                    raw_cached = int(cc)
+                normalized_input = raw_input + raw_cached if raw_cached > raw_input else raw_input
+                total_input = self._format_tokens_short(normalized_input) if normalized_input > 0 else "—"
+                cached_tok = self._format_tokens_short(raw_cached) if raw_cached > 0 else "—"
+
+                rows.append(f"""<tr>
+  <th>{escape(agent.agent_name)}</th>
+  <td>{chip}</td>
+  <td>{escape(task.formatted_duration)}</td>
+  <td>{escape(total_input)}</td>
+  <td>{escape(cached_tok)}</td>
+  <td>{escape(output_tok)}</td>
+</tr>""")
+
+            summary_text = f"{escape(task_name)} — {escape(status_label)}" if status_label else escape(task_name)
+            task_blocks.append(f"""
+        <details>
+          <summary>{summary_text}</summary>
+          <table>
+            <thead>
+              <tr>
+                <th>Agent</th>
+                <th>Result</th>
+                <th>Duration</th>
+                <th>Total in</th>
+                <th>Cached</th>
+                <th>Output</th>
+              </tr>
+            </thead>
+            <tbody>{''.join(rows)}</tbody>
+          </table>
+        </details>""")
+
+        return f"""
+      <section style="margin-top: 16px;">
+        <h2 style="margin: 0 0 12px; font-size: 1rem; font-weight: 600;">Per-task breakdown</h2>
+        {''.join(task_blocks)}
+      </section>"""
 
     def _compute_agent_difficulty_metrics(self, report: RuntimeReport) -> list[AgentDifficultyMetrics]:
         """Compute difficulty-level metrics per agent from existing PracticalAgentReport data."""
@@ -717,6 +923,17 @@ class StaticHtmlReporter:
                     pass_at_1=cs.pass_at_1_rate,
                 ))
         return results
+
+    @staticmethod
+    def _format_tokens_short(n: int | float | None) -> str:
+        if n is None:
+            return "—"
+        n = int(n)
+        if n >= 1_000_000:
+            return f"{n / 1_000_000:.1f}M"
+        if n >= 1_000:
+            return f"{n / 1_000:.0f}k"
+        return str(n)
 
     @staticmethod
     def _format_duration_ms(duration_ms: float | None) -> str:
