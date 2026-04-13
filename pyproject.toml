@@ -16,6 +16,7 @@ dev = [
     "pytest-cov>=5.0",
     "ruff>=0.4",
 ]
+swebench = ["datasets>=2.0"]
 
 [project.scripts]
 openbench = "openbench.cli:main"

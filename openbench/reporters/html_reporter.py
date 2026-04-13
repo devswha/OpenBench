@@ -40,6 +40,7 @@ class StaticHtmlReporter:
             self._render_metric_tab_panel(report, metric) for metric in RUNTIME_METRICS
         )
         practical_panel = self._render_practical_tab_panel(report)
+        swebench_panel = self._render_swebench_tab_panel(report)
         tasks_panel = self._render_tasks_tab_panel(report)
         tab_buttons = self._render_tab_buttons(report)
 
@@ -392,6 +393,7 @@ class StaticHtmlReporter:
     {metric_tab_panels}
     {practical_panel}
     {tasks_panel}
+    {swebench_panel}
   </main>
 
   <script>
@@ -437,6 +439,8 @@ class StaticHtmlReporter:
         if report.practical_agents:
             tabs.append(("practical", "Practical"))
             tabs.append(("tasks", "Tasks"))
+        if report.swebench_agents:
+            tabs.append(("swe-bench", "SWE-bench"))
         return "\n      ".join(
             f'<button class="tab-btn" id="btn-{escape(tab_id)}" role="tab" '
             f'data-tab="{escape(tab_id)}" aria-selected="false" '
@@ -654,8 +658,8 @@ class StaticHtmlReporter:
             return ""
         leaderboard = self._render_practical_leaderboard(report)
         per_task_details = self._render_practical_per_task_details(report)
-        difficulty_sections = self._render_difficulty_sections(report)
-        category_heatmap = self._render_category_heatmap(report)
+        difficulty_sections = self._render_difficulty_sections(report.practical_agents)
+        category_heatmap = self._render_category_heatmap(report.practical_agents)
         return f"""
     <div id="tab-practical" class="tab-panel" role="tabpanel" aria-labelledby="btn-practical">
       <article class="card" style="margin-bottom: 16px;">
@@ -668,10 +672,33 @@ class StaticHtmlReporter:
     </div>
 """
 
+    def _render_swebench_tab_panel(self, report: RuntimeReport) -> str:
+        if not report.swebench_agents:
+            return ""
+        leaderboard = self._render_leaderboard(report.swebench_agents)
+        per_task_details = self._render_per_task_details(report.swebench_agents)
+        difficulty_sections = self._render_difficulty_sections(report.swebench_agents)
+        category_heatmap = self._render_category_heatmap(report.swebench_agents)
+        return f"""
+    <div id="tab-swe-bench" class="tab-panel" role="tabpanel" aria-labelledby="btn-swe-bench">
+      <article class="card" style="margin-bottom: 16px;">
+        <p class="metric-description">SWE-bench evaluates agents on real-world GitHub issues from open-source Python projects. Each agent must resolve the issue by editing the codebase so that the hidden test suite passes. Three independent axes are measured: <strong>correctness</strong> (did the patch resolve the issue?), <strong>duration</strong> (time to completion), and <strong>token usage</strong> (cost efficiency).</p>
+      </article>
+      {leaderboard}
+      {difficulty_sections}
+      {category_heatmap}
+      {per_task_details}
+    </div>
+"""
+
     def _render_practical_leaderboard(self, report: RuntimeReport) -> str:
         """Render a compact agent leaderboard table (always visible)."""
+        return self._render_leaderboard(report.practical_agents)
+
+    def _render_leaderboard(self, agents: list[PracticalAgentReport]) -> str:
+        """Render a compact agent leaderboard table for the given agents list."""
         rows = []
-        for agent in report.practical_agents:
+        for agent in agents:
             passed = sum(1 for t in agent.tasks if t.status == "success")
             total = len(agent.tasks)
             pass_str = f"{passed}/{total}"
@@ -735,8 +762,12 @@ class StaticHtmlReporter:
 
     def _render_practical_per_task_details(self, report: RuntimeReport) -> str:
         """Render per-task collapsible details with agents as rows (vertical layout)."""
+        return self._render_per_task_details(report.practical_agents)
+
+    def _render_per_task_details(self, agents: list[PracticalAgentReport]) -> str:
+        """Render per-task collapsible details for the given agents list."""
         task_names: list[str] = []
-        for agent in report.practical_agents:
+        for agent in agents:
             for task in agent.tasks:
                 if task.task_name not in task_names:
                     task_names.append(task.task_name)
@@ -748,7 +779,7 @@ class StaticHtmlReporter:
         for task_name in task_names:
             # Determine summary status label
             statuses = []
-            for agent in report.practical_agents:
+            for agent in agents:
                 task = next((t for t in agent.tasks if t.task_name == task_name), None)
                 if task:
                     statuses.append(task.status)
@@ -765,7 +796,7 @@ class StaticHtmlReporter:
                 status_label = ""
 
             rows = []
-            for agent in report.practical_agents:
+            for agent in agents:
                 task = next((t for t in agent.tasks if t.task_name == task_name), None)
                 if task is None:
                     rows.append(f"<tr><th>{escape(agent.agent_name)}</th><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr>")
@@ -833,10 +864,13 @@ class StaticHtmlReporter:
         {''.join(task_blocks)}
       </section>"""
 
-    def _compute_agent_difficulty_metrics(self, report: RuntimeReport) -> list[AgentDifficultyMetrics]:
+    def _compute_agent_difficulty_metrics(
+        self,
+        agents: list[PracticalAgentReport],
+    ) -> list[AgentDifficultyMetrics]:
         """Compute difficulty-level metrics per agent from existing PracticalAgentReport data."""
         results: list[AgentDifficultyMetrics] = []
-        for agent in report.practical_agents:
+        for agent in agents:
             # Convert PracticalTaskResult objects to TaskRunResult objects
             runs: list[TaskRunResult] = []
             for task in agent.tasks:
@@ -883,10 +917,13 @@ class StaticHtmlReporter:
                 ))
         return results
 
-    def _compute_agent_category_metrics(self, report: RuntimeReport) -> list[AgentCategoryMetrics]:
+    def _compute_agent_category_metrics(
+        self,
+        agents: list[PracticalAgentReport],
+    ) -> list[AgentCategoryMetrics]:
         """Compute Pass@1 per agent per category per difficulty from existing data."""
         results: list[AgentCategoryMetrics] = []
-        for agent in report.practical_agents:
+        for agent in agents:
             # Convert PracticalTaskResult objects to TaskRunResult objects
             runs: list[TaskRunResult] = []
             for task in agent.tasks:
@@ -948,10 +985,10 @@ class StaticHtmlReporter:
         remaining = seconds % 60
         return f"{minutes}m {remaining:.0f}s"
 
-    def _render_difficulty_sections(self, report: RuntimeReport) -> str:
-        if not report.practical_agents:
+    def _render_difficulty_sections(self, agents: list[PracticalAgentReport]) -> str:
+        if not agents:
             return ""
-        metrics_list = self._compute_agent_difficulty_metrics(report)
+        metrics_list = self._compute_agent_difficulty_metrics(agents)
         if not metrics_list:
             return ""
 
@@ -966,7 +1003,7 @@ class StaticHtmlReporter:
         if not difficulties_present:
             return ""
 
-        agent_names = [a.agent_name for a in report.practical_agents]
+        agent_names = [a.agent_name for a in agents]
 
         sections = []
         for difficulty in difficulties_present:
@@ -1031,10 +1068,10 @@ class StaticHtmlReporter:
             return ""
         return "\n      <h2 style=\"margin: 20px 0 12px;\">Results by difficulty</h2>" + "".join(sections)
 
-    def _render_category_heatmap(self, report: RuntimeReport) -> str:
-        if not report.practical_agents:
+    def _render_category_heatmap(self, agents: list[PracticalAgentReport]) -> str:
+        if not agents:
             return ""
-        cat_metrics = self._compute_agent_category_metrics(report)
+        cat_metrics = self._compute_agent_category_metrics(agents)
         if not cat_metrics:
             return ""
 
@@ -1042,7 +1079,7 @@ class StaticHtmlReporter:
         if len(all_categories) <= 1:
             return ""
 
-        agent_names = [a.agent_name for a in report.practical_agents]
+        agent_names = [a.agent_name for a in agents]
         difficulties_present: list[str] = []
         for diff in ("easy", "medium", "hard"):
             if any(m.difficulty == diff for m in cat_metrics):

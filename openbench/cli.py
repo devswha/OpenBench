@@ -54,6 +54,8 @@ def doctor(config_path: Path | None, results_dir: Path | None, environment_mode:
     for agent_factory in AGENT_REGISTRY.values():
         checks.extend(agent_factory().doctor_checks())
     checks.extend(SUITE_REGISTRY["runtime"](config).doctor_checks())
+    if "swe-bench" in SUITE_REGISTRY:
+        checks.extend(SUITE_REGISTRY["swe-bench"](config).doctor_checks())
     checks.extend(docker_doctor_checks(config))
     all_ok = True
     for check in checks:
@@ -127,6 +129,20 @@ def report(report_format: str, input_dir: Path, output_path: Path | None) -> Non
     reporter_factory = reporter_factories[report_format]
     reporter_factory().write(parsed_run.report, destination)
     click.echo(f"Report written: {destination}")
+
+
+@main.group()
+def fetch() -> None:
+    """Download external benchmark datasets."""
+
+
+@fetch.command(name="swe-bench")
+@click.option("--output", "output_path", type=click.Path(path_type=Path, dir_okay=False), default=None)
+def fetch_swebench_command(output_path: Path | None) -> None:
+    """Download SWE-bench Verified dataset."""
+    from openbench.suites.swebench.fetch import fetch_swebench_verified
+    result = fetch_swebench_verified(output_path)
+    click.echo(f"Dataset written: {result}")
 
 
 if __name__ == "__main__":

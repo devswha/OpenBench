@@ -42,9 +42,11 @@ def parse_runtime_report(input_dir: Path) -> ParsedRun:
 
     agent_reports = []
     practical_reports = []
+    swebench_reports = []
     for agent_name in sorted(agents):
         runtime_json_path = input_dir / agent_name / "runtime.json"
         practical_json_path = input_dir / agent_name / "practical.json"
+        swebench_json_path = input_dir / agent_name / "swe-bench.json"
 
         if runtime_json_path.exists():
             runtime_payload = _load_json(runtime_json_path)
@@ -58,7 +60,13 @@ def parse_runtime_report(input_dir: Path) -> ParsedRun:
         elif "practical" in suites:
             raise ReportInputError(f"Missing practical.json for agent '{agent_name}'")
 
-    if not agent_reports and not practical_reports:
+        if swebench_json_path.exists():
+            swebench_payload = _load_json(swebench_json_path)
+            swebench_reports.append(_parse_practical_agent_report(agent_name, swebench_payload, suite_name="swe-bench"))
+        elif "swe-bench" in suites:
+            raise ReportInputError(f"Missing swe-bench.json for agent '{agent_name}'")
+
+    if not agent_reports and not practical_reports and not swebench_reports:
         raise ReportInputError("Input run does not contain any supported suite artifacts")
 
     report = RuntimeReport(
@@ -71,6 +79,7 @@ def parse_runtime_report(input_dir: Path) -> ParsedRun:
         practical_execution_environment=_first_execution_environment(practical_reports, "practical", input_dir),
         agents=agent_reports,
         practical_agents=practical_reports,
+        swebench_agents=swebench_reports,
     )
     return ParsedRun(report=report, input_dir=input_dir)
 
@@ -140,10 +149,14 @@ def _parse_runtime_agent_report(agent_name: str, payload: dict[str, Any]) -> Age
     return AgentReport(agent_name=agent_name, display_name=display_name, metrics=metrics)
 
 
-def _parse_practical_agent_report(agent_name: str, payload: dict[str, Any]) -> PracticalAgentReport:
+def _parse_practical_agent_report(
+    agent_name: str,
+    payload: dict[str, Any],
+    suite_name: str = "practical",
+) -> PracticalAgentReport:
     suite = payload.get("suite")
-    if suite != "practical":
-        raise ReportInputError(f"Expected practical suite payload for agent '{agent_name}', got {suite!r}")
+    if suite != suite_name:
+        raise ReportInputError(f"Expected {suite_name} suite payload for agent '{agent_name}', got {suite!r}")
 
     task_entries = payload.get("tasks")
     if not isinstance(task_entries, list):

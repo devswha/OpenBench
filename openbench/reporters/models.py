@@ -169,3 +169,4 @@ class RuntimeReport:
     practical_execution_environment: dict[str, str | int | float | None] = field(default_factory=dict)
     agents: list[AgentReport] = field(default_factory=list)
     practical_agents: list[PracticalAgentReport] = field(default_factory=list)
+    swebench_agents: list[PracticalAgentReport] = field(default_factory=list)
