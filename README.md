@@ -45,8 +45,14 @@ Same tasks. Same environment. Comparable results.
 | Suite | Tier | Tasks | What it tests |
 |-------|------|-------|---------------|
 | **Practical** | 0 | 5 self-contained fixtures | Bug fixes, feature additions, refactoring — fast CI validation |
-| **SWE-bench** | 1 | 50 curated [SWE-bench Verified](https://www.swebench.com/) issues | Production-grade coding on Django, Sympy, scikit-learn, matplotlib, Flask, Requests |
+| **[SWE-bench](https://github.com/swe-bench/SWE-bench)** | 1 | 50 curated [SWE-bench Verified](https://www.swebench.com/) issues | Production-grade coding on Django, Sympy, scikit-learn, matplotlib, Flask, Requests |
 | **Runtime** | — | 3 CLI metrics | Startup latency, peak memory, binary size |
+
+### About SWE-bench
+
+[SWE-bench](https://github.com/swe-bench/SWE-bench) ([ICLR 2024 Oral](https://arxiv.org/abs/2310.06770)) is a benchmark for evaluating LLMs on real-world GitHub issues. Given a codebase and an issue description, the model generates a patch to resolve the problem.
+
+OpenBench integrates **SWE-bench Verified** — a human-validated subset of 500 problems confirmed solvable by real software engineers ([report](https://openai.com/index/introducing-swe-bench-verified/)). We use the official Docker-based evaluation harness for reproducible per-instance evaluation, while adding **agent CLI comparison** (time, tokens, cache) on top of the standard pass/fail grading.
 
 ## Agents
 
@@ -163,6 +169,11 @@ uv run python -m pytest -q    # 61 tests
 Tests use fixture-backed shim agents — no live API calls needed for CI.
 
 ---
+
+## Acknowledgments
+
+- [SWE-bench](https://github.com/swe-bench/SWE-bench) by Princeton NLP — the benchmark dataset and Docker evaluation harness that powers our Tier 1 suite
+- [claw-bench](https://github.com/devswha/claw-bench) — predecessor project focused on CLI runtime overhead; OpenBench continues and expands this work into task-effectiveness benchmarking
 
 ## License
 
