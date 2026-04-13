@@ -19,7 +19,6 @@ class ClaudeNativeAgent(RuntimeCommandAgent):
         return [
             resolved_command,
             "-p",
-            "--bare",
             "--dangerously-skip-permissions",
             "--output-format", "json",
             task.prompt,

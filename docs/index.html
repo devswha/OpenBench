@@ -477,8 +477,8 @@
   <span class="chip chip-ok">SUCCESS</span>
   <div>Fix the single-file arithmetic bug so the calculator tests pass.</div>
   <div>Changed files: calculator.py</div>
-  <div>Duration: 8.4s</div>
-  <div>Tokens: 294</div>
+  <div>Duration: 13.5s</div>
+  <div>Tokens: 258</div>
   
   
 </li>
@@ -488,8 +488,8 @@
   <span class="chip chip-ok">SUCCESS</span>
   <div>Repair the slugify implementation so the failing unit tests pass.</div>
   <div>Changed files: text_utils.py</div>
-  <div>Duration: 17.3s</div>
-  <div>Tokens: 816</div>
+  <div>Duration: 17.2s</div>
+  <div>Tokens: 466</div>
   
   
 </li>
@@ -499,8 +499,8 @@
   <span class="chip chip-ok">SUCCESS</span>
   <div>Migrate timeout loading to support the new schema while preserving backward compatibility.</div>
   <div>Changed files: config_loader.py</div>
-  <div>Duration: 22.8s</div>
-  <div>Tokens: 987</div>
+  <div>Duration: 1m 2s</div>
+  <div>Tokens: 569</div>
   
   
 </li>
@@ -510,8 +510,8 @@
   <span class="chip chip-ok">SUCCESS</span>
   <div>Repair the broken imports after the math_ops module was moved.</div>
   <div>Changed files: app.py, report.py</div>
-  <div>Duration: 16.8s</div>
-  <div>Tokens: 925</div>
+  <div>Duration: 16.0s</div>
+  <div>Tokens: 548</div>
   
   
 </li>
@@ -521,8 +521,8 @@
   <span class="chip chip-ok">SUCCESS</span>
   <div>Add the missing email validation and trimming behavior.</div>
   <div>Changed files: user_service.py</div>
-  <div>Duration: 18.1s</div>
-  <div>Tokens: 916</div>
+  <div>Duration: 37.5s</div>
+  <div>Tokens: 621</div>
   
   
 </li>
@@ -891,7 +891,7 @@
         <div style="overflow-x: auto;">
         <table>
           <thead><tr><th>Metric</th><th>claude</th><th>codex</th><th>omc</th><th>omx</th></tr></thead>
-          <tbody><tr><td>Pass@1</td><td>100.0%</td><td>100.0%</td><td>80.0%</td><td>100.0%</td></tr><tr><td>Tokens/success</td><td>787</td><td>—</td><td>189,127</td><td>—</td></tr><tr><td>Duration/success</td><td>17.3s</td><td>36.7s</td><td>41.9s</td><td>1m 1s</td></tr></tbody>
+          <tbody><tr><td>Pass@1</td><td>100.0%</td><td>100.0%</td><td>80.0%</td><td>100.0%</td></tr><tr><td>Tokens/success</td><td>492</td><td>—</td><td>189,127</td><td>—</td></tr><tr><td>Duration/success</td><td>17.2s</td><td>36.7s</td><td>41.9s</td><td>1m 1s</td></tr></tbody>
         </table>
         </div>
       </article>
@@ -906,8 +906,8 @@
             <tr><th>Result</th><th>Duration</th><th>Tokens</th><th>Result</th><th>Duration</th><th>Tokens</th><th>Result</th><th>Duration</th><th>Tokens</th><th>Result</th><th>Duration</th><th>Tokens</th></tr>
           </thead>
           <tbody>
-            <tr><td>single-file-bug-fix</td><td><span class="chip chip-ok">PASS</span></td><td>8.4s</td><td>294</td><td><span class="chip chip-ok">PASS</span></td><td>36.7s</td><td>—</td><td><span class="chip chip-ok">PASS</span></td><td>17.1s</td><td>150,727</td><td><span class="chip chip-ok">PASS</span></td><td>1m 6s</td><td>—</td></tr><tr><td>failing-unit-test-repair</td><td><span class="chip chip-ok">PASS</span></td><td>17.3s</td><td>816</td><td><span class="chip chip-ok">PASS</span></td><td>42.1s</td><td>—</td><td><span class="chip chip-ok">PASS</span></td><td>1m 7s</td><td>252,308</td><td><span class="chip chip-ok">PASS</span></td><td>1m 9s</td><td>—</td></tr><tr><td>config-schema-migration</td><td><span class="chip chip-ok">PASS</span></td><td>22.8s</td><td>987</td><td><span class="chip chip-ok">PASS</span></td><td>35.5s</td><td>—</td><td><span class="chip chip-fail">FAIL</span></td><td>19.8s</td><td>151,008</td><td><span class="chip chip-ok">PASS</span></td><td>33.6s</td><td>—</td></tr><tr><td>multi-file-import-repair</td><td><span class="chip chip-ok">PASS</span></td><td>16.8s</td><td>925</td><td><span class="chip chip-ok">PASS</span></td><td>38.9s</td><td>—</td><td><span class="chip chip-ok">PASS</span></td><td>1m 2s</td><td>202,498</td><td><span class="chip chip-ok">PASS</span></td><td>36.1s</td><td>—</td></tr><tr><td>validation-error-handling-patch</td><td><span class="chip chip-ok">PASS</span></td><td>18.1s</td><td>916</td><td><span class="chip chip-ok">PASS</span></td><td>28.9s</td><td>—</td><td><span class="chip chip-ok">PASS</span></td><td>21.5s</td><td>150,978</td><td><span class="chip chip-ok">PASS</span></td><td>1m 1s</td><td>—</td></tr>
-            <tr style="font-weight: 600; border-top: 2px solid var(--border);"><td>Total</td><td>5/5</td><td>1m 23s</td><td>3,938</td><td>5/5</td><td>3m 2s</td><td>—</td><td>4/5</td><td>3m 8s</td><td>907,519</td><td>5/5</td><td>4m 25s</td><td>—</td></tr>
+            <tr><td>single-file-bug-fix</td><td><span class="chip chip-ok">PASS</span></td><td>13.5s</td><td>258</td><td><span class="chip chip-ok">PASS</span></td><td>36.7s</td><td>—</td><td><span class="chip chip-ok">PASS</span></td><td>17.1s</td><td>150,727</td><td><span class="chip chip-ok">PASS</span></td><td>1m 6s</td><td>—</td></tr><tr><td>failing-unit-test-repair</td><td><span class="chip chip-ok">PASS</span></td><td>17.2s</td><td>466</td><td><span class="chip chip-ok">PASS</span></td><td>42.1s</td><td>—</td><td><span class="chip chip-ok">PASS</span></td><td>1m 7s</td><td>252,308</td><td><span class="chip chip-ok">PASS</span></td><td>1m 9s</td><td>—</td></tr><tr><td>config-schema-migration</td><td><span class="chip chip-ok">PASS</span></td><td>1m 2s</td><td>569</td><td><span class="chip chip-ok">PASS</span></td><td>35.5s</td><td>—</td><td><span class="chip chip-fail">FAIL</span></td><td>19.8s</td><td>151,008</td><td><span class="chip chip-ok">PASS</span></td><td>33.6s</td><td>—</td></tr><tr><td>multi-file-import-repair</td><td><span class="chip chip-ok">PASS</span></td><td>16.0s</td><td>548</td><td><span class="chip chip-ok">PASS</span></td><td>38.9s</td><td>—</td><td><span class="chip chip-ok">PASS</span></td><td>1m 2s</td><td>202,498</td><td><span class="chip chip-ok">PASS</span></td><td>36.1s</td><td>—</td></tr><tr><td>validation-error-handling-patch</td><td><span class="chip chip-ok">PASS</span></td><td>37.5s</td><td>621</td><td><span class="chip chip-ok">PASS</span></td><td>28.9s</td><td>—</td><td><span class="chip chip-ok">PASS</span></td><td>21.5s</td><td>150,978</td><td><span class="chip chip-ok">PASS</span></td><td>1m 1s</td><td>—</td></tr>
+            <tr style="font-weight: 600; border-top: 2px solid var(--border);"><td>Total</td><td>5/5</td><td>2m 26s</td><td>2,462</td><td>5/5</td><td>3m 2s</td><td>—</td><td>4/5</td><td>3m 8s</td><td>907,519</td><td>5/5</td><td>4m 25s</td><td>—</td></tr>
           </tbody>
         </table>
         </div>
@@ -923,8 +923,8 @@
   <span class="chip chip-ok">SUCCESS</span>
   <div>Fix the single-file arithmetic bug so the calculator tests pass.</div>
   <div>Changed files: calculator.py</div>
-  <div>Duration: 8.4s</div>
-  <div>Tokens: 294</div>
+  <div>Duration: 13.5s</div>
+  <div>Tokens: 258</div>
   
   
 </li>
@@ -934,8 +934,8 @@
   <span class="chip chip-ok">SUCCESS</span>
   <div>Repair the slugify implementation so the failing unit tests pass.</div>
   <div>Changed files: text_utils.py</div>
-  <div>Duration: 17.3s</div>
-  <div>Tokens: 816</div>
+  <div>Duration: 17.2s</div>
+  <div>Tokens: 466</div>
   
   
 </li>
@@ -945,8 +945,8 @@
   <span class="chip chip-ok">SUCCESS</span>
   <div>Migrate timeout loading to support the new schema while preserving backward compatibility.</div>
   <div>Changed files: config_loader.py</div>
-  <div>Duration: 22.8s</div>
-  <div>Tokens: 987</div>
+  <div>Duration: 1m 2s</div>
+  <div>Tokens: 569</div>
   
   
 </li>
@@ -956,8 +956,8 @@
   <span class="chip chip-ok">SUCCESS</span>
   <div>Repair the broken imports after the math_ops module was moved.</div>
   <div>Changed files: app.py, report.py</div>
-  <div>Duration: 16.8s</div>
-  <div>Tokens: 925</div>
+  <div>Duration: 16.0s</div>
+  <div>Tokens: 548</div>
   
   
 </li>
@@ -967,8 +967,8 @@
   <span class="chip chip-ok">SUCCESS</span>
   <div>Add the missing email validation and trimming behavior.</div>
   <div>Changed files: user_service.py</div>
-  <div>Duration: 18.1s</div>
-  <div>Tokens: 916</div>
+  <div>Duration: 37.5s</div>
+  <div>Tokens: 621</div>
   
   
 </li>
