@@ -322,6 +322,7 @@
       <button class="tab-btn" id="btn-binary-size-mb" role="tab" data-tab="binary-size-mb" aria-selected="false" aria-controls="tab-binary-size-mb">Binary size</button>
       <button class="tab-btn" id="btn-practical" role="tab" data-tab="practical" aria-selected="false" aria-controls="tab-practical">Practical</button>
       <button class="tab-btn" id="btn-tasks" role="tab" data-tab="tasks" aria-selected="false" aria-controls="tab-tasks">Tasks</button>
+      <button class="tab-btn" id="btn-swe-bench" role="tab" data-tab="swe-bench" aria-selected="false" aria-controls="tab-swe-bench">SWE-bench</button>
     </nav>
 
     <div id="tab-overview" class="tab-panel" role="tabpanel" aria-labelledby="btn-overview">
@@ -332,7 +333,7 @@
       </article>
       <article class="card">
         <h2>Suites</h2>
-        <p><strong>practical</strong></p>
+        <p><strong>practical, swe-bench</strong></p>
       </article>
       <article class="card">
         <h2>Agents</h2>
@@ -1275,6 +1276,150 @@
           </tbody>
         </table>
       </article>
+    </div>
+
+    
+    <div id="tab-swe-bench" class="tab-panel" role="tabpanel" aria-labelledby="btn-swe-bench">
+      <article class="card" style="margin-bottom: 16px;">
+        <p class="metric-description">SWE-bench evaluates agents on real-world GitHub issues from open-source Python projects. Each agent must resolve the issue by editing the codebase so that the hidden test suite passes. Three independent axes are measured: <strong>correctness</strong> (did the patch resolve the issue?), <strong>duration</strong> (time to completion), and <strong>token usage</strong> (cost efficiency).</p>
+      </article>
+      
+      <article class="card" style="margin-bottom: 16px;">
+        <h2>Agent leaderboard</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Agent</th>
+              <th>Pass</th>
+              <th>Time</th>
+              <th>Tokens (in)</th>
+              <th>Tokens (out)</th>
+            </tr>
+          </thead>
+          <tbody>
+<tr>
+  <th>claude</th>
+  <td>2/3</td>
+  <td>7m 54s</td>
+  <td>911k</td>
+  <td>5k</td>
+</tr>
+<tr>
+  <th>omc</th>
+  <td>2/3</td>
+  <td>7m 40s</td>
+  <td>1.9M</td>
+  <td>9k</td>
+</tr></tbody>
+        </table>
+      </article>
+      
+      <h2 style="margin: 20px 0 12px;">Results by difficulty</h2>
+      <article class="card" style="margin-bottom: 16px;">
+        <h3>Hard</h3>
+        <div style="overflow-x: auto;">
+        <table>
+          <thead><tr><th>Metric</th><th>claude</th><th>omc</th></tr></thead>
+          <tbody><tr><td>Pass@1</td><td>66.7%</td><td>66.7%</td></tr><tr><td>Tokens/success</td><td>2,301</td><td>4,369</td></tr><tr><td>Duration/success</td><td>1m 4s</td><td>2m 16s</td></tr></tbody>
+        </table>
+        </div>
+      </article>
+      
+      
+      <section style="margin-top: 16px;">
+        <h2 style="margin: 0 0 12px; font-size: 1rem; font-weight: 600;">Per-task breakdown</h2>
+        
+        <details>
+          <summary>django__django-17087 — all fail</summary>
+          <table>
+            <thead>
+              <tr>
+                <th>Agent</th>
+                <th>Result</th>
+                <th>Duration</th>
+                <th>Total in</th>
+                <th>Cached</th>
+                <th>Output</th>
+              </tr>
+            </thead>
+            <tbody><tr>
+  <th>claude</th>
+  <td><span class="chip chip-fail">FAIL</span></td>
+  <td>5m 46s</td>
+  <td>—</td>
+  <td>—</td>
+  <td>—</td>
+</tr><tr>
+  <th>omc</th>
+  <td><span class="chip chip-fail">FAIL</span></td>
+  <td>3m 8s</td>
+  <td>—</td>
+  <td>—</td>
+  <td>—</td>
+</tr></tbody>
+          </table>
+        </details>
+        <details>
+          <summary>django__django-16493 — all pass</summary>
+          <table>
+            <thead>
+              <tr>
+                <th>Agent</th>
+                <th>Result</th>
+                <th>Duration</th>
+                <th>Total in</th>
+                <th>Cached</th>
+                <th>Output</th>
+              </tr>
+            </thead>
+            <tbody><tr>
+  <th>claude</th>
+  <td><span class="chip chip-ok">PASS</span></td>
+  <td>37.5s</td>
+  <td>271k</td>
+  <td>271k</td>
+  <td>1k</td>
+</tr><tr>
+  <th>omc</th>
+  <td><span class="chip chip-ok">PASS</span></td>
+  <td>1m 53s</td>
+  <td>1.0M</td>
+  <td>1.0M</td>
+  <td>4k</td>
+</tr></tbody>
+          </table>
+        </details>
+        <details>
+          <summary>sympy__sympy-24213 — all pass</summary>
+          <table>
+            <thead>
+              <tr>
+                <th>Agent</th>
+                <th>Result</th>
+                <th>Duration</th>
+                <th>Total in</th>
+                <th>Cached</th>
+                <th>Output</th>
+              </tr>
+            </thead>
+            <tbody><tr>
+  <th>claude</th>
+  <td><span class="chip chip-ok">PASS</span></td>
+  <td>1m 30s</td>
+  <td>640k</td>
+  <td>640k</td>
+  <td>3k</td>
+</tr><tr>
+  <th>omc</th>
+  <td><span class="chip chip-ok">PASS</span></td>
+  <td>2m 38s</td>
+  <td>856k</td>
+  <td>856k</td>
+  <td>4k</td>
+</tr></tbody>
+          </table>
+        </details>
+      </section>
     </div>
 
   </main>

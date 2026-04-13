@@ -63,8 +63,6 @@ def parse_runtime_report(input_dir: Path) -> ParsedRun:
         if swebench_json_path.exists():
             swebench_payload = _load_json(swebench_json_path)
             swebench_reports.append(_parse_practical_agent_report(agent_name, swebench_payload, suite_name="swe-bench"))
-        elif "swe-bench" in suites:
-            raise ReportInputError(f"Missing swe-bench.json for agent '{agent_name}'")
 
     if not agent_reports and not practical_reports and not swebench_reports:
         raise ReportInputError("Input run does not contain any supported suite artifacts")

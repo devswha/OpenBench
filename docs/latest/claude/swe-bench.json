@@ -1,0 +1,137 @@
+{
+  "agent": "claude",
+  "execution_environment": {
+    "mode": "native"
+  },
+  "generated_at": "2026-04-13T05:53:00.194388+00:00",
+  "suite": "swe-bench",
+  "summary": {
+    "failed_tasks": 1,
+    "successful_tasks": 2,
+    "task_count": 3
+  },
+  "tasks": [
+    {
+      "agent_name": "claude",
+      "raw": {
+        "category": "bugfix",
+        "classification": "patch_error",
+        "description": "Class methods from nested classes cannot be used as Field.default.\nDescription\n\t \n\t\t(last modified by Mariusz Felisiak)\n\t \nGiven the following model:\n \nclass Profile(models.Model):\n\tclass Capability(m",
+        "difficulty": "hard",
+        "duration_ms": 346031,
+        "error_message": "git apply failed: error: tests/migrations/test_writer.py: does not match index",
+        "task_kind": "swe-bench"
+      },
+      "status": "failed",
+      "task_name": "django__django-17087",
+      "tier": 2,
+      "value": 0.0
+    },
+    {
+      "agent_name": "claude",
+      "raw": {
+        "agent_log": {
+          "cache_creation_input_tokens": 92460,
+          "cache_read_input_tokens": 178795,
+          "cost_usd": 0.4186245,
+          "duration_api_ms": 24220,
+          "input_tokens": 17,
+          "model_usage": {
+            "claude-sonnet-4-6": {
+              "cacheCreationInputTokens": 92460,
+              "cacheReadInputTokens": 178795,
+              "contextWindow": 200000,
+              "costUSD": 0.4186245,
+              "inputTokens": 17,
+              "maxOutputTokens": 32000,
+              "outputTokens": 1214,
+              "webSearchRequests": 0
+            }
+          },
+          "num_turns": 6,
+          "output_tokens": 1214
+        },
+        "category": "bugfix",
+        "changed_files": [
+          "django/db/models/fields/files.py"
+        ],
+        "classification": "pass",
+        "description": "Callable storage on FileField fails to deconstruct when it returns default_storage\nDescription\n\t\nIf the storage argument on a FileField is set to a callable that returns default_storage, it is omitted",
+        "difficulty": "hard",
+        "duration_ms": 37525,
+        "fail_to_pass": [
+          "A callable that returns default_storage is not omitted when"
+        ],
+        "fail_to_pass_resolved": true,
+        "instance_id": "django__django-16493",
+        "repo": "django/django",
+        "task_kind": "swe-bench",
+        "test_output": "Unable to find image 'swebench/sweb.eval.x86_64.django__django-16493:latest' locally\ndocker: Error response from daemon: pull access denied for swebench/sweb.eval.x86_64.django__django-16493, repository does not exist or may require 'docker login': denied: requested access to the resource is denied\n\nRun 'docker run --help' for more information",
+        "token_usage": {
+          "estimated_cost_usd": 0.4186245,
+          "input_tokens": 17,
+          "output_tokens": 1214,
+          "provider": "anthropic",
+          "total_tokens": 1231
+        }
+      },
+      "status": "success",
+      "task_name": "django__django-16493",
+      "tier": 2,
+      "value": 100.0
+    },
+    {
+      "agent_name": "claude",
+      "raw": {
+        "agent_log": {
+          "cache_creation_input_tokens": 103780,
+          "cache_read_input_tokens": 535764,
+          "cost_usd": 0.6000282,
+          "duration_api_ms": 63288,
+          "input_tokens": 38,
+          "model_usage": {
+            "claude-sonnet-4-6": {
+              "cacheCreationInputTokens": 103780,
+              "cacheReadInputTokens": 535764,
+              "contextWindow": 200000,
+              "costUSD": 0.6000282,
+              "inputTokens": 38,
+              "maxOutputTokens": 32000,
+              "outputTokens": 3334,
+              "webSearchRequests": 0
+            }
+          },
+          "num_turns": 13,
+          "output_tokens": 3334
+        },
+        "category": "bugfix",
+        "changed_files": [
+          "sympy/physics/units/unitsystem.py"
+        ],
+        "classification": "pass",
+        "description": "collect_factor_and_dimension does not detect equivalent dimensions in addition\nCode to reproduce:\r\n```python\r\nfrom sympy.physics import units\r\nfrom sympy.physics.units.systems.si import SI\r\n\r\nv1 = uni",
+        "difficulty": "hard",
+        "duration_ms": 90250,
+        "fail_to_pass": [
+          "test_issue_24211"
+        ],
+        "fail_to_pass_resolved": true,
+        "instance_id": "sympy__sympy-24213",
+        "repo": "sympy/sympy",
+        "task_kind": "swe-bench",
+        "test_output": "Unable to find image 'swebench/sweb.eval.x86_64.sympy__sympy-24213:latest' locally\ndocker: Error response from daemon: pull access denied for swebench/sweb.eval.x86_64.sympy__sympy-24213, repository does not exist or may require 'docker login': denied: requested access to the resource is denied\n\nRun 'docker run --help' for more information",
+        "token_usage": {
+          "estimated_cost_usd": 0.6000282,
+          "input_tokens": 38,
+          "output_tokens": 3334,
+          "provider": "anthropic",
+          "total_tokens": 3372
+        }
+      },
+      "status": "success",
+      "task_name": "sympy__sympy-24213",
+      "tier": 2,
+      "value": 100.0
+    }
+  ]
+}

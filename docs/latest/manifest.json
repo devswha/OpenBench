@@ -1,5 +1,13 @@
 {
   "agents": {
+    "claude": {
+      "command": "claude",
+      "version": "2.1.97 (Claude Code) --bare"
+    },
+    "codex": {
+      "command": "codex",
+      "version": "OpenAI Codex v0.120.0"
+    },
     "omc": {
       "command": "claude",
       "version": "2.1.97 (Claude Code)"
@@ -7,14 +15,6 @@
     "omx": {
       "command": "omx",
       "version": "oh-my-codex v0.12.5"
-    },
-    "codex": {
-      "command": "codex",
-      "version": "OpenAI Codex v0.120.0"
-    },
-    "claude": {
-      "command": "claude",
-      "version": "2.1.97 (Claude Code) --bare"
     }
   },
   "environment": {
@@ -32,7 +32,8 @@
     "startup_ms": 1000.0
   },
   "suites": [
-    "practical"
+    "practical",
+    "swe-bench"
   ],
   "timestamp": "2026-04-12T09:20:56+00:00",
   "version": "1.0"
