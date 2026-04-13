@@ -11,6 +11,10 @@
     "codex": {
       "command": "codex",
       "version": "OpenAI Codex v0.120.0"
+    },
+    "claude": {
+      "command": "claude",
+      "version": "2.1.97 (Claude Code) --bare"
     }
   },
   "environment": {
