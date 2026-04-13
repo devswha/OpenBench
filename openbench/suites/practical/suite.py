@@ -96,6 +96,9 @@ class PracticalTaskSuite(BenchSuite):
                     "estimated_cost_usd": result.token_usage.estimated_cost_usd,
                     "provider": result.token_usage.provider,
                 }
+            agent_log = result.raw.get("agent_log")
+            if agent_log is not None:
+                error_raw["agent_log"] = agent_log
             return Score(
                 task_name=result.task.name,
                 agent_name=agent_name,
@@ -185,6 +188,9 @@ class PracticalTaskSuite(BenchSuite):
                 "estimated_cost_usd": result.token_usage.estimated_cost_usd,
                 "provider": result.token_usage.provider,
             }
+        agent_log = result.raw.get("agent_log")
+        if agent_log is not None:
+            raw["agent_log"] = agent_log
         if result.error_message:
             raw["agent_error_message"] = result.error_message
         if result.output:

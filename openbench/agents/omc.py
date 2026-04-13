@@ -41,3 +41,20 @@ class OMCAgent(RuntimeCommandAgent):
             estimated_cost_usd=data.get("total_cost_usd"),
             provider="anthropic",
         )
+
+    def parse_agent_log(self, output: str) -> dict | None:
+        try:
+            data = json.loads(output)
+        except (json.JSONDecodeError, TypeError):
+            return None
+        usage = data.get("usage", {})
+        return {
+            "num_turns": data.get("num_turns"),
+            "duration_api_ms": data.get("duration_api_ms"),
+            "cost_usd": data.get("total_cost_usd"),
+            "input_tokens": usage.get("input_tokens", 0),
+            "output_tokens": usage.get("output_tokens", 0),
+            "cache_creation_input_tokens": usage.get("cache_creation_input_tokens", 0),
+            "cache_read_input_tokens": usage.get("cache_read_input_tokens", 0),
+            "model_usage": data.get("modelUsage"),
+        }

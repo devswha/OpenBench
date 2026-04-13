@@ -191,6 +191,15 @@ class RuntimeCommandAgent(AgentAdapter):
         )
         output = combine_output(completed)
         token_usage = self.parse_token_usage(output) if hasattr(self, "parse_token_usage") else None
+        agent_log = self.parse_agent_log(output) if hasattr(self, "parse_agent_log") else None
+        raw: dict[str, object] = {
+            "task_kind": "practical",
+            "available": True,
+            "execution_environment": execution_environment,
+            "execution_environment_contract": execution_environment_contract,
+        }
+        if agent_log:
+            raw["agent_log"] = agent_log
         return RunResult(
             task=task,
             status=status,
@@ -200,12 +209,7 @@ class RuntimeCommandAgent(AgentAdapter):
             error_message=None if completed.returncode == 0 else "Agent command failed",
             files_changed=self._diff_workspace(before, after),
             token_usage=token_usage,
-            raw={
-                "task_kind": "practical",
-                "available": True,
-                "execution_environment": execution_environment,
-                "execution_environment_contract": execution_environment_contract,
-            },
+            raw=raw,
         )
 
     def _snapshot_workspace(self, workspace: Path) -> dict[str, str]:
