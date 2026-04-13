@@ -3,194 +3,90 @@
   "execution_environment": {
     "mode": "native"
   },
-  "generated_at": "2026-04-13T06:24:26.216155+00:00",
+  "generated_at": "2026-04-13T08:52:58.210623+00:00",
   "suite": "swe-bench",
   "summary": {
     "failed_tasks": 0,
-    "successful_tasks": 3,
-    "task_count": 3
+    "successful_tasks": 1,
+    "task_count": 1
   },
   "tasks": [
     {
       "agent_name": "claude",
       "raw": {
         "agent_log": {
-          "cache_creation_input_tokens": 102756,
-          "cache_read_input_tokens": 574381,
-          "cost_usd": 0.7221060000000001,
-          "duration_api_ms": 100111,
-          "input_tokens": 39,
+          "cache_creation_input_tokens": 111916,
+          "cache_read_input_tokens": 4827690,
+          "cost_usd": 2.344316999999999,
+          "duration_api_ms": 493117,
+          "input_tokens": 180,
           "model_usage": {
-            "claude-haiku-4-5-20251001": {
-              "cacheCreationInputTokens": 71664,
-              "cacheReadInputTokens": 144287,
-              "contextWindow": 200000,
-              "costUSD": 0.11278470000000002,
-              "inputTokens": 21,
-              "maxOutputTokens": 32000,
-              "outputTokens": 1751,
-              "webSearchRequests": 0
-            },
             "claude-sonnet-4-6": {
-              "cacheCreationInputTokens": 102756,
-              "cacheReadInputTokens": 574381,
+              "cacheCreationInputTokens": 111916,
+              "cacheReadInputTokens": 4827690,
               "contextWindow": 200000,
-              "costUSD": 0.6093213,
-              "inputTokens": 39,
+              "costUSD": 2.344316999999999,
+              "inputTokens": 180,
               "maxOutputTokens": 32000,
-              "outputTokens": 3437,
+              "outputTokens": 31719,
               "webSearchRequests": 0
             }
           },
-          "num_turns": 16,
-          "output_tokens": 3437
+          "num_turns": 64,
+          "output_tokens": 31719
         },
         "category": "bugfix",
         "changed_files": [
-          "Django.egg-info/PKG-INFO",
-          "Django.egg-info/SOURCES.txt",
-          "Django.egg-info/dependency_links.txt",
-          "Django.egg-info/entry_points.txt",
-          "Django.egg-info/not-zip-safe",
-          "Django.egg-info/requires.txt",
-          "Django.egg-info/top_level.txt",
-          "django/db/migrations/serializer.py"
+          ".git/ORIG_HEAD",
+          ".git/index",
+          ".git/objects/54/c2e10b43602513aad9094d90b1db70553899fb",
+          ".git/objects/65/44c49d99ffc13ac0a3e50c50da774b5a3ab2eb",
+          ".git/objects/65/ee5c02f4fdf6b918cb87ee8ad7a84b0e176099",
+          ".git/objects/68/d5bda3d9f162de951099fb2fc9cc39784e8ea5",
+          ".git/objects/6c/01795f92aa0c7609ba746f8445e1bcca1ca98d",
+          ".git/objects/72/22e62c857e7a421388f34ed8dd7571a38ce66c",
+          ".git/objects/89/6cfe309732c10d15ae174e291a3098fb1c640f",
+          ".git/objects/8a/e99b11e6c03abd7a30cea8acbfc4b6094c9017",
+          ".git/objects/93/da381a57328a814194073c7f6318b667a38904",
+          ".git/objects/9a/edc8f1e11db7f558d2370799020e69d580683d",
+          ".git/objects/af/a27345cf7388cf67483cb0b60dc207b200b36a",
+          ".git/objects/cd/a589e3f29de74e3ec20226abbe636e21991619",
+          ".git/objects/d9/ee2de3980a0330cb33768e7903e657e6e4ca41",
+          ".git/objects/eb/2a95658ce6f9b0805d104ce4c0d5ece931962d",
+          ".git/objects/ed/baf4db620829ea4b260ce7a3c43a6d17b40aae",
+          "django/contrib/postgres/constraints.py",
+          "django/db/models/constraints.py",
+          "tests/constraints/tests.py"
         ],
         "classification": "pass",
-        "description": "Class methods from nested classes cannot be used as Field.default.\nDescription\n\t \n\t\t(last modified by Mariusz Felisiak)\n\t \nGiven the following model:\n \nclass Profile(models.Model):\n\tclass Capability(m",
+        "description": "Allow to customize the code attribute of ValidationError raised by BaseConstraint.validate\nDescription\n\t\nIt is currently possible to customize the violation_error_message of a ValidationError raised b",
         "difficulty": "hard",
-        "duration_ms": 135281,
+        "duration_ms": 547691,
         "fail_to_pass": [
-          "test_serialize_nested_class_method (migrations.test_writer.WriterTests.test_serialize_nested_class_method)"
+          "test_custom_violation_code_message (constraints.tests.BaseConstraintTests.test_custom_violation_code_message)",
+          "test_deconstruction (constraints.tests.BaseConstraintTests.test_deconstruction)",
+          "test_eq (constraints.tests.CheckConstraintTests.test_eq)",
+          "test_repr_with_violation_error_code (constraints.tests.CheckConstraintTests.test_repr_with_violation_error_code)",
+          "test_validate_custom_error (constraints.tests.CheckConstraintTests.test_validate_custom_error)",
+          "test_eq (constraints.tests.UniqueConstraintTests.test_eq)",
+          "test_repr_with_violation_error_code (constraints.tests.UniqueConstraintTests.test_repr_with_violation_error_code)",
+          "test_validate_conditon_custom_error (constraints.tests.UniqueConstraintTests.test_validate_conditon_custom_error)"
         ],
         "fail_to_pass_resolved": true,
-        "instance_id": "django__django-17087",
+        "instance_id": "django__django-16560",
         "repo": "django/django",
         "task_kind": "swe-bench",
-        "test_output": "Unable to find image 'swebench/sweb.eval.x86_64.django__django-17087:latest' locally\ndocker: Error response from daemon: pull access denied for swebench/sweb.eval.x86_64.django__django-17087, repository does not exist or may require 'docker login': denied: requested access to the resource is denied\n\nRun 'docker run --help' for more information",
+        "test_output": "Testing against Django installed in '/testbed/django' with up to 12 processes\nFound 78 test(s).\nSystem check identified no issues (0 silenced).\nCreating test database for alias 'default'...\nCloning test database for alias 'default'...\nCloning test database for alias 'default'...\nCloning test database for alias 'default'...\n..........................s.......................sss.........................\n----------------------------------------------------------------------\nRan 78 tests in 0.058s\n\nOK (skipped=4)\nDestroying test database for alias 'default'...\nDestroying test database for alias 'default'...\nDestroying test database for alias 'default'...\nDestroying test database for alias 'default'...",
         "token_usage": {
-          "estimated_cost_usd": 0.7221060000000001,
-          "input_tokens": 39,
-          "output_tokens": 3437,
+          "estimated_cost_usd": 2.344316999999999,
+          "input_tokens": 180,
+          "output_tokens": 31719,
           "provider": "anthropic",
-          "total_tokens": 3476
+          "total_tokens": 31899
         }
       },
       "status": "success",
-      "task_name": "django__django-17087",
-      "tier": 2,
-      "value": 100.0
-    },
-    {
-      "agent_name": "claude",
-      "raw": {
-        "agent_log": {
-          "cache_creation_input_tokens": 103205,
-          "cache_read_input_tokens": 858600,
-          "cost_usd": 0.6971257499999999,
-          "duration_api_ms": 70847,
-          "input_tokens": 59,
-          "model_usage": {
-            "claude-sonnet-4-6": {
-              "cacheCreationInputTokens": 103205,
-              "cacheReadInputTokens": 858600,
-              "contextWindow": 200000,
-              "costUSD": 0.6971257499999999,
-              "inputTokens": 59,
-              "maxOutputTokens": 32000,
-              "outputTokens": 3490,
-              "webSearchRequests": 0
-            }
-          },
-          "num_turns": 20,
-          "output_tokens": 3490
-        },
-        "category": "bugfix",
-        "changed_files": [
-          "Django.egg-info/PKG-INFO",
-          "Django.egg-info/SOURCES.txt",
-          "Django.egg-info/dependency_links.txt",
-          "Django.egg-info/entry_points.txt",
-          "Django.egg-info/not-zip-safe",
-          "Django.egg-info/requires.txt",
-          "Django.egg-info/top_level.txt",
-          "django/db/models/fields/files.py"
-        ],
-        "classification": "pass",
-        "description": "Callable storage on FileField fails to deconstruct when it returns default_storage\nDescription\n\t\nIf the storage argument on a FileField is set to a callable that returns default_storage, it is omitted",
-        "difficulty": "hard",
-        "duration_ms": 122308,
-        "fail_to_pass": [
-          "A callable that returns default_storage is not omitted when"
-        ],
-        "fail_to_pass_resolved": true,
-        "instance_id": "django__django-16493",
-        "repo": "django/django",
-        "task_kind": "swe-bench",
-        "test_output": "Unable to find image 'swebench/sweb.eval.x86_64.django__django-16493:latest' locally\ndocker: Error response from daemon: pull access denied for swebench/sweb.eval.x86_64.django__django-16493, repository does not exist or may require 'docker login': denied: requested access to the resource is denied\n\nRun 'docker run --help' for more information",
-        "token_usage": {
-          "estimated_cost_usd": 0.6971257499999999,
-          "input_tokens": 59,
-          "output_tokens": 3490,
-          "provider": "anthropic",
-          "total_tokens": 3549
-        }
-      },
-      "status": "success",
-      "task_name": "django__django-16493",
-      "tier": 2,
-      "value": 100.0
-    },
-    {
-      "agent_name": "claude",
-      "raw": {
-        "agent_log": {
-          "cache_creation_input_tokens": 115334,
-          "cache_read_input_tokens": 733431,
-          "cost_usd": 0.7142928,
-          "duration_api_ms": 78143,
-          "input_tokens": 47,
-          "model_usage": {
-            "claude-sonnet-4-6": {
-              "cacheCreationInputTokens": 115334,
-              "cacheReadInputTokens": 733431,
-              "contextWindow": 200000,
-              "costUSD": 0.7142928,
-              "inputTokens": 47,
-              "maxOutputTokens": 32000,
-              "outputTokens": 4108,
-              "webSearchRequests": 0
-            }
-          },
-          "num_turns": 17,
-          "output_tokens": 4108
-        },
-        "category": "bugfix",
-        "changed_files": [
-          "sympy/physics/units/unitsystem.py"
-        ],
-        "classification": "pass",
-        "description": "collect_factor_and_dimension does not detect equivalent dimensions in addition\nCode to reproduce:\r\n```python\r\nfrom sympy.physics import units\r\nfrom sympy.physics.units.systems.si import SI\r\n\r\nv1 = uni",
-        "difficulty": "hard",
-        "duration_ms": 119255,
-        "fail_to_pass": [
-          "test_issue_24211"
-        ],
-        "fail_to_pass_resolved": true,
-        "instance_id": "sympy__sympy-24213",
-        "repo": "sympy/sympy",
-        "task_kind": "swe-bench",
-        "test_output": "Unable to find image 'swebench/sweb.eval.x86_64.sympy__sympy-24213:latest' locally\ndocker: Error response from daemon: pull access denied for swebench/sweb.eval.x86_64.sympy__sympy-24213, repository does not exist or may require 'docker login': denied: requested access to the resource is denied\n\nRun 'docker run --help' for more information",
-        "token_usage": {
-          "estimated_cost_usd": 0.7142928,
-          "input_tokens": 47,
-          "output_tokens": 4108,
-          "provider": "anthropic",
-          "total_tokens": 4155
-        }
-      },
-      "status": "success",
-      "task_name": "sympy__sympy-24213",
+      "task_name": "django__django-16560",
       "tier": 2,
       "value": 100.0
     }

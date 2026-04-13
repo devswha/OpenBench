@@ -44,8 +44,8 @@ def test_determine_test_command_django():
         "FAIL_TO_PASS": '["tests.auth_tests.test_views.LoginViewTest.test_login"]',
     }
     cmd = determine_test_command(instance)
-    assert "django" in cmd
-    assert "test" in cmd
+    assert "runtests.py" in cmd
+    assert "auth_tests" in cmd
 
 
 def test_determine_test_command_pytest():

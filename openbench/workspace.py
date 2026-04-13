@@ -1,8 +1,9 @@
 from __future__ import annotations
 
+import shutil
+import tempfile
 from contextlib import contextmanager
 from pathlib import Path
-from tempfile import TemporaryDirectory
 from typing import Iterator
 
 
@@ -12,5 +13,8 @@ class TempWorkspaceManager:
 
     @contextmanager
     def workspace(self) -> Iterator[Path]:
-        with TemporaryDirectory(prefix=self.prefix) as directory:
+        directory = tempfile.mkdtemp(prefix=self.prefix)
+        try:
             yield Path(directory)
+        finally:
+            shutil.rmtree(directory, ignore_errors=True)

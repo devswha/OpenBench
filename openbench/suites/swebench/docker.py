@@ -53,13 +53,20 @@ def run_tests_in_container(
     if docker_bin is None:
         raise RuntimeError("docker is not installed or not on PATH")
 
+    # SWE-bench images have the repo at /testbed but not pip-installed.
+    # Mount the agent's workspace at /patch, copy into /testbed,
+    # install dependencies, then run tests.
+    copy_install_test = (
+        "cp -r /patch/. /testbed/ 2>/dev/null; "
+        "cd /testbed && pip install -e . --quiet 2>/dev/null; "
+        f"{test_command}"
+    )
     completed = run_subprocess(
         [
             docker_bin, "run", "--rm",
-            "-v", f"{workspace}:/testbed",
-            "-w", "/testbed",
+            "-v", f"{workspace}:/patch:ro",
             image,
-            "bash", "-c", test_command,
+            "bash", "-c", copy_install_test,
         ],
         timeout=timeout,
     )

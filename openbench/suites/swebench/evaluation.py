@@ -44,9 +44,10 @@ def check_tests_passed(test_output: str, fail_to_pass: list[str]) -> bool:
                 return False
 
     # Must have a positive test-passed signal
-    lower = test_output.lower()
-    if "passed" in lower or "\nok\n" in lower or "\nok" == lower[-3:]:
-        return True
+    for line in test_output.splitlines():
+        stripped = line.strip().lower()
+        if stripped == "ok" or stripped.startswith("ok (") or "passed" in stripped:
+            return True
 
     return False
 
@@ -64,14 +65,22 @@ def determine_test_command(instance: dict) -> str:
 
     # Django uses its own test runner
     if "django" in repo:
-        # Django test IDs are like "tests.module.TestClass.test_method"
+        # Django fail_to_pass can be verbose: "test_name (module.Class.test_name)"
+        # or dotted: "module.Class.test_name"
         test_labels = set()
         for test_id in fail_to_pass:
-            # Take the module path (drop the test method)
-            parts = test_id.rsplit(".", 1)
-            test_labels.add(parts[0] if len(parts) > 1 else test_id)
+            if "(" in test_id:
+                # Verbose format: "test_foo (app.tests.TestClass.test_foo)"
+                # Extract the module path from inside parentheses
+                inner = test_id.split("(", 1)[1].rstrip(")")
+                # Take up to the test class (drop test method)
+                parts = inner.rsplit(".", 1)
+                test_labels.add(parts[0] if len(parts) > 1 else inner)
+            else:
+                parts = test_id.rsplit(".", 1)
+                test_labels.add(parts[0] if len(parts) > 1 else test_id)
         labels = " ".join(sorted(test_labels))
-        return f"python -m django test {labels} --settings=django.conf.global_settings --parallel 1"
+        return f"python tests/runtests.py {labels}"
 
     # Most other repos use pytest
     test_files = set()

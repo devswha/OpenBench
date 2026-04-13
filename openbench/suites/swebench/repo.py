@@ -12,19 +12,27 @@ def clone_and_checkout(
     repo: str,
     base_commit: str,
     workspace: Path,
-    timeout: int = 300,
+    timeout: int = 120,
 ) -> None:
-    """Clone a GitHub repo and checkout a specific commit."""
+    """Shallow-clone a GitHub repo and checkout a specific commit."""
     repo_url = f"https://github.com/{repo}.git"
     completed = run_subprocess(
-        ["git", "clone", "--quiet", repo_url, str(workspace)],
+        ["git", "clone", "--depth", "1", "--quiet", repo_url, str(workspace)],
         timeout=timeout,
     )
     if completed.returncode != 0:
         raise RuntimeError(f"git clone failed: {combine_output(completed)}")
 
     completed = run_subprocess(
-        ["git", "checkout", "--quiet", base_commit],
+        ["git", "fetch", "--depth", "1", "origin", base_commit],
+        cwd=workspace,
+        timeout=timeout,
+    )
+    if completed.returncode != 0:
+        raise RuntimeError(f"git fetch commit failed: {combine_output(completed)}")
+
+    completed = run_subprocess(
+        ["git", "checkout", "--quiet", "FETCH_HEAD"],
         cwd=workspace,
         timeout=60,
     )
