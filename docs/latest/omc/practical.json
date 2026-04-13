@@ -3,7 +3,7 @@
   "execution_environment": {
     "mode": "native"
   },
-  "generated_at": "2026-04-13T01:05:49.473807+00:00",
+  "generated_at": "2026-04-13T04:47:20.858328+00:00",
   "suite": "practical",
   "summary": {
     "failed_tasks": 0,
@@ -15,27 +15,27 @@
       "agent_name": "omc",
       "raw": {
         "agent_log": {
-          "cache_creation_input_tokens": 43826,
-          "cache_read_input_tokens": 86769,
-          "cost_usd": 0.1941222,
-          "duration_api_ms": 6728,
+          "cache_creation_input_tokens": 13919,
+          "cache_read_input_tokens": 117134,
+          "cost_usd": 0.09105044999999999,
+          "duration_api_ms": 7094,
           "input_tokens": 8,
           "model_usage": {
             "claude-sonnet-4-6": {
-              "cacheCreationInputTokens": 43826,
-              "cacheReadInputTokens": 86769,
+              "cacheCreationInputTokens": 13919,
+              "cacheReadInputTokens": 117134,
               "contextWindow": 200000,
-              "costUSD": 0.1941222,
+              "costUSD": 0.09105044999999999,
               "inputTokens": 8,
               "maxOutputTokens": 32000,
-              "outputTokens": 248,
+              "outputTokens": 246,
               "webSearchRequests": 0
             }
           },
           "num_turns": 3,
-          "output_tokens": 248
+          "output_tokens": 246
         },
-        "agent_output": "{\"type\":\"result\",\"subtype\":\"success\",\"is_error\":false,\"duration_ms\":8885,\"duration_api_ms\":6728,\"num_turns\":3,\"result\":\"Fixed. `add_numbers` was returning `a - b` instead of `a + b`.\",\"stop_reason\":\"end_turn\",\"session_id\":\"eeecc917-4e24-4127-bf9b-cb26291f5b6d\",\"total_cost_usd\":0.1941222,\"usage\":{\"input_tokens\":8,\"cache_creation_input_tokens\":43826,\"cache_read_input_tokens\":86769,\"output_tokens\":248,\"server_tool_use\":{\"web_search_requests\":0,\"web_fetch_requests\":0},\"service_tier\":\"standard\",\"cache_creation\":{\"ephemeral_1h_input_tokens\":0,\"ephemeral_5m_input_tokens\":43826},\"inference_geo\":\"\",\"iterations\":[],\"speed\":\"standard\"},\"modelUsage\":{\"claude-sonnet-4-6\":{\"inputTokens\":8,\"outputTokens\":248,\"cacheReadInputTokens\":86769,\"cacheCreationInputTokens\":43826,\"webSearchRequests\":0,\"costUSD\":0.1941222,\"contextWindow\":200000,\"maxOutputTokens\":32000}},\"permission_denials\":[],\"terminal_reason\":\"completed\",\"fast_mode_state\":\"off\",\"uuid\":\"cec8cd2f-925b-4f60-bd12-e9cae14dba36\"}",
+        "agent_output": "{\"type\":\"result\",\"subtype\":\"success\",\"is_error\":false,\"duration_ms\":10320,\"duration_api_ms\":7094,\"num_turns\":3,\"result\":\"Fixed. Changed `a - b` to `a + b` in `add_numbers`.\",\"stop_reason\":\"end_turn\",\"session_id\":\"f8d284ea-785d-4916-b004-24fc4171bc5c\",\"total_cost_usd\":0.09105044999999999,\"usage\":{\"input_tokens\":8,\"cache_creation_input_tokens\":13919,\"cache_read_input_tokens\":117134,\"output_tokens\":246,\"server_tool_use\":{\"web_search_requests\":0,\"web_fetch_requests\":0},\"service_tier\":\"standard\",\"cache_creation\":{\"ephemeral_1h_input_tokens\":0,\"ephemeral_5m_input_tokens\":13919},\"inference_geo\":\"\",\"iterations\":[],\"speed\":\"standard\"},\"modelUsage\":{\"claude-sonnet-4-6\":{\"inputTokens\":8,\"outputTokens\":246,\"cacheReadInputTokens\":117134,\"cacheCreationInputTokens\":13919,\"webSearchRequests\":0,\"costUSD\":0.09105044999999999,\"contextWindow\":200000,\"maxOutputTokens\":32000}},\"permission_denials\":[],\"terminal_reason\":\"completed\",\"fast_mode_state\":\"off\",\"uuid\":\"fd0ac405-4527-4552-a332-57b92817ad88\"}",
         "allowed_touchpoints": [
           "calculator.py"
         ],
@@ -44,7 +44,7 @@
         ],
         "classification": "pass",
         "description": "Fix the single-file arithmetic bug so the calculator tests pass.",
-        "duration_ms": 10991,
+        "duration_ms": 14150,
         "execution_environment": {
           "mode": "native"
         },
@@ -56,11 +56,11 @@
         "success_command_output": "..                                                                       [100%]\n2 passed in 0.01s",
         "task_kind": "practical",
         "token_usage": {
-          "estimated_cost_usd": 0.1941222,
+          "estimated_cost_usd": 0.09105044999999999,
           "input_tokens": 8,
-          "output_tokens": 248,
+          "output_tokens": 246,
           "provider": "anthropic",
-          "total_tokens": 256
+          "total_tokens": 254
         },
         "touchpoint_violations": []
       },
@@ -73,27 +73,27 @@
       "agent_name": "omc",
       "raw": {
         "agent_log": {
-          "cache_creation_input_tokens": 51654,
-          "cache_read_input_tokens": 123284,
-          "cost_usd": 0.23708069999999998,
-          "duration_api_ms": 10270,
+          "cache_creation_input_tokens": 44481,
+          "cache_read_input_tokens": 131207,
+          "cost_usd": 0.21326385,
+          "duration_api_ms": 13600,
           "input_tokens": 11,
           "model_usage": {
             "claude-sonnet-4-6": {
-              "cacheCreationInputTokens": 51654,
-              "cacheReadInputTokens": 123284,
+              "cacheCreationInputTokens": 44481,
+              "cacheReadInputTokens": 131207,
               "contextWindow": 200000,
-              "costUSD": 0.23708069999999998,
+              "costUSD": 0.21326385,
               "inputTokens": 11,
               "maxOutputTokens": 32000,
-              "outputTokens": 424,
+              "outputTokens": 471,
               "webSearchRequests": 0
             }
           },
           "num_turns": 5,
-          "output_tokens": 424
+          "output_tokens": 471
         },
-        "agent_output": "{\"type\":\"result\",\"subtype\":\"success\",\"is_error\":false,\"duration_ms\":12487,\"duration_api_ms\":10270,\"num_turns\":5,\"result\":\"Fixed. Changed `replace(\\\" \\\", \\\"_\\\")` to `replace(\\\" \\\", \\\"-\\\")` in `text_utils.py:2`.\",\"stop_reason\":\"end_turn\",\"session_id\":\"cbbcc939-e608-4624-ae91-2599d051c1f2\",\"total_cost_usd\":0.23708069999999998,\"usage\":{\"input_tokens\":11,\"cache_creation_input_tokens\":51654,\"cache_read_input_tokens\":123284,\"output_tokens\":424,\"server_tool_use\":{\"web_search_requests\":0,\"web_fetch_requests\":0},\"service_tier\":\"standard\",\"cache_creation\":{\"ephemeral_1h_input_tokens\":0,\"ephemeral_5m_input_tokens\":51654},\"inference_geo\":\"\",\"iterations\":[],\"speed\":\"standard\"},\"modelUsage\":{\"claude-sonnet-4-6\":{\"inputTokens\":11,\"outputTokens\":424,\"cacheReadInputTokens\":123284,\"cacheCreationInputTokens\":51654,\"webSearchRequests\":0,\"costUSD\":0.23708069999999998,\"contextWindow\":200000,\"maxOutputTokens\":32000}},\"permission_denials\":[],\"terminal_reason\":\"completed\",\"fast_mode_state\":\"off\",\"uuid\":\"4e8826a2-11df-4403-8be1-21fe4a9337f4\"}",
+        "agent_output": "{\"type\":\"result\",\"subtype\":\"success\",\"is_error\":false,\"duration_ms\":16994,\"duration_api_ms\":13600,\"num_turns\":5,\"result\":\"Fixed. Changed `replace(\\\" \\\", \\\"_\\\")` to `replace(\\\" \\\", \\\"-\\\")` so spaces become hyphens as the tests expect.\",\"stop_reason\":\"end_turn\",\"session_id\":\"f5aa783d-4816-4f08-9fc9-f2ec376716be\",\"total_cost_usd\":0.21326385,\"usage\":{\"input_tokens\":11,\"cache_creation_input_tokens\":44481,\"cache_read_input_tokens\":131207,\"output_tokens\":471,\"server_tool_use\":{\"web_search_requests\":0,\"web_fetch_requests\":0},\"service_tier\":\"standard\",\"cache_creation\":{\"ephemeral_1h_input_tokens\":0,\"ephemeral_5m_input_tokens\":44481},\"inference_geo\":\"\",\"iterations\":[],\"speed\":\"standard\"},\"modelUsage\":{\"claude-sonnet-4-6\":{\"inputTokens\":11,\"outputTokens\":471,\"cacheReadInputTokens\":131207,\"cacheCreationInputTokens\":44481,\"webSearchRequests\":0,\"costUSD\":0.21326385,\"contextWindow\":200000,\"maxOutputTokens\":32000}},\"permission_denials\":[],\"terminal_reason\":\"completed\",\"fast_mode_state\":\"off\",\"uuid\":\"184b5ae2-b136-46c9-886a-d9b1eac371eb\"}",
         "allowed_touchpoints": [
           "text_utils.py"
         ],
@@ -102,23 +102,23 @@
         ],
         "classification": "pass",
         "description": "Repair the slugify implementation so the failing unit tests pass.",
-        "duration_ms": 14708,
+        "duration_ms": 21313,
         "execution_environment": {
           "mode": "native"
         },
         "regression_command": "python -m pytest -q",
         "regression_command_exit_code": 0,
-        "regression_command_output": "..                                                                       [100%]\n2 passed in 0.00s",
+        "regression_command_output": "..                                                                       [100%]\n2 passed in 0.01s",
         "success_command": "python -m pytest -q tests/test_text_utils.py",
         "success_command_exit_code": 0,
-        "success_command_output": "..                                                                       [100%]\n2 passed in 0.00s",
+        "success_command_output": "..                                                                       [100%]\n2 passed in 0.01s",
         "task_kind": "practical",
         "token_usage": {
-          "estimated_cost_usd": 0.23708069999999998,
+          "estimated_cost_usd": 0.21326385,
           "input_tokens": 11,
-          "output_tokens": 424,
+          "output_tokens": 471,
           "provider": "anthropic",
-          "total_tokens": 435
+          "total_tokens": 482
         },
         "touchpoint_violations": []
       },
@@ -131,27 +131,27 @@
       "agent_name": "omc",
       "raw": {
         "agent_log": {
-          "cache_creation_input_tokens": 44309,
-          "cache_read_input_tokens": 130663,
-          "cost_usd": 0.21239565000000005,
-          "duration_api_ms": 36234,
-          "input_tokens": 11,
+          "cache_creation_input_tokens": 45106,
+          "cache_read_input_tokens": 176176,
+          "cost_usd": 0.2331723,
+          "duration_api_ms": 22413,
+          "input_tokens": 14,
           "model_usage": {
             "claude-sonnet-4-6": {
-              "cacheCreationInputTokens": 44309,
-              "cacheReadInputTokens": 130663,
+              "cacheCreationInputTokens": 45106,
+              "cacheReadInputTokens": 176176,
               "contextWindow": 200000,
-              "costUSD": 0.21239565000000005,
-              "inputTokens": 11,
+              "costUSD": 0.2331723,
+              "inputTokens": 14,
               "maxOutputTokens": 32000,
-              "outputTokens": 467,
+              "outputTokens": 742,
               "webSearchRequests": 0
             }
           },
-          "num_turns": 5,
-          "output_tokens": 467
+          "num_turns": 6,
+          "output_tokens": 742
         },
-        "agent_output": "{\"type\":\"result\",\"subtype\":\"success\",\"is_error\":false,\"duration_ms\":38445,\"duration_api_ms\":36234,\"num_turns\":5,\"result\":\"Done. `load_timeout` now checks for `timeout_seconds` first (new schema), falling back to `timeout_ms // 1000` (old schema).\",\"stop_reason\":\"end_turn\",\"session_id\":\"9a0f8d26-962e-4374-b89e-88c9feb07230\",\"total_cost_usd\":0.21239565000000005,\"usage\":{\"input_tokens\":11,\"cache_creation_input_tokens\":44309,\"cache_read_input_tokens\":130663,\"output_tokens\":467,\"server_tool_use\":{\"web_search_requests\":0,\"web_fetch_requests\":0},\"service_tier\":\"standard\",\"cache_creation\":{\"ephemeral_1h_input_tokens\":0,\"ephemeral_5m_input_tokens\":44309},\"inference_geo\":\"\",\"iterations\":[],\"speed\":\"standard\"},\"modelUsage\":{\"claude-sonnet-4-6\":{\"inputTokens\":11,\"outputTokens\":467,\"cacheReadInputTokens\":130663,\"cacheCreationInputTokens\":44309,\"webSearchRequests\":0,\"costUSD\":0.21239565000000005,\"contextWindow\":200000,\"maxOutputTokens\":32000}},\"permission_denials\":[],\"terminal_reason\":\"completed\",\"fast_mode_state\":\"off\",\"uuid\":\"cc6eb0d9-a4bf-4bff-b992-86759e0a0a86\"}",
+        "agent_output": "{\"type\":\"result\",\"subtype\":\"success\",\"is_error\":false,\"duration_ms\":30175,\"duration_api_ms\":22413,\"num_turns\":6,\"result\":\"Both tests pass. The fix adds `timeout_seconds` support as the new schema while keeping `timeout_ms // 1000` as the backward-compatible fallback.\",\"stop_reason\":\"end_turn\",\"session_id\":\"0ee9e3a5-d1ad-4ff3-99b9-e4f0ed735b04\",\"total_cost_usd\":0.2331723,\"usage\":{\"input_tokens\":14,\"cache_creation_input_tokens\":45106,\"cache_read_input_tokens\":176176,\"output_tokens\":742,\"server_tool_use\":{\"web_search_requests\":0,\"web_fetch_requests\":0},\"service_tier\":\"standard\",\"cache_creation\":{\"ephemeral_1h_input_tokens\":0,\"ephemeral_5m_input_tokens\":45106},\"inference_geo\":\"\",\"iterations\":[],\"speed\":\"standard\"},\"modelUsage\":{\"claude-sonnet-4-6\":{\"inputTokens\":14,\"outputTokens\":742,\"cacheReadInputTokens\":176176,\"cacheCreationInputTokens\":45106,\"webSearchRequests\":0,\"costUSD\":0.2331723,\"contextWindow\":200000,\"maxOutputTokens\":32000}},\"permission_denials\":[],\"terminal_reason\":\"completed\",\"fast_mode_state\":\"off\",\"uuid\":\"fdd778f3-71ca-4085-9496-e64e10e48947\"}",
         "allowed_touchpoints": [
           "config_loader.py"
         ],
@@ -160,23 +160,23 @@
         ],
         "classification": "pass",
         "description": "Migrate timeout loading to support the new schema while preserving backward compatibility.",
-        "duration_ms": 40645,
+        "duration_ms": 32973,
         "execution_environment": {
           "mode": "native"
         },
         "regression_command": "python -m pytest -q",
         "regression_command_exit_code": 0,
-        "regression_command_output": "..                                                                       [100%]\n2 passed in 0.00s",
+        "regression_command_output": "..                                                                       [100%]\n2 passed in 0.01s",
         "success_command": "python -m pytest -q tests/test_config_loader.py",
         "success_command_exit_code": 0,
-        "success_command_output": "..                                                                       [100%]\n2 passed in 0.01s",
+        "success_command_output": "..                                                                       [100%]\n2 passed in 0.00s",
         "task_kind": "practical",
         "token_usage": {
-          "estimated_cost_usd": 0.21239565000000005,
-          "input_tokens": 11,
-          "output_tokens": 467,
+          "estimated_cost_usd": 0.2331723,
+          "input_tokens": 14,
+          "output_tokens": 742,
           "provider": "anthropic",
-          "total_tokens": 478
+          "total_tokens": 756
         },
         "touchpoint_violations": []
       },
@@ -189,27 +189,27 @@
       "agent_name": "omc",
       "raw": {
         "agent_log": {
-          "cache_creation_input_tokens": 44616,
-          "cache_read_input_tokens": 130618,
-          "cost_usd": 0.2145834,
-          "duration_api_ms": 12044,
+          "cache_creation_input_tokens": 14719,
+          "cache_read_input_tokens": 161393,
+          "cost_usd": 0.11204715,
+          "duration_api_ms": 15598,
           "input_tokens": 11,
           "model_usage": {
             "claude-sonnet-4-6": {
-              "cacheCreationInputTokens": 44616,
-              "cacheReadInputTokens": 130618,
+              "cacheCreationInputTokens": 14719,
+              "cacheReadInputTokens": 161393,
               "contextWindow": 200000,
-              "costUSD": 0.2145834,
+              "costUSD": 0.11204715,
               "inputTokens": 11,
               "maxOutputTokens": 32000,
-              "outputTokens": 537,
+              "outputTokens": 560,
               "webSearchRequests": 0
             }
           },
           "num_turns": 6,
-          "output_tokens": 537
+          "output_tokens": 560
         },
-        "agent_output": "{\"type\":\"result\",\"subtype\":\"success\",\"is_error\":false,\"duration_ms\":14856,\"duration_api_ms\":12044,\"num_turns\":6,\"result\":\"Both `app.py` and `report.py` now import from `utils.math_ops` instead of `helpers.math_ops`.\",\"stop_reason\":\"end_turn\",\"session_id\":\"b59a933c-c54b-4cd7-b44d-34e68fd8095b\",\"total_cost_usd\":0.2145834,\"usage\":{\"input_tokens\":11,\"cache_creation_input_tokens\":44616,\"cache_read_input_tokens\":130618,\"output_tokens\":537,\"server_tool_use\":{\"web_search_requests\":0,\"web_fetch_requests\":0},\"service_tier\":\"standard\",\"cache_creation\":{\"ephemeral_1h_input_tokens\":0,\"ephemeral_5m_input_tokens\":44616},\"inference_geo\":\"\",\"iterations\":[],\"speed\":\"standard\"},\"modelUsage\":{\"claude-sonnet-4-6\":{\"inputTokens\":11,\"outputTokens\":537,\"cacheReadInputTokens\":130618,\"cacheCreationInputTokens\":44616,\"webSearchRequests\":0,\"costUSD\":0.2145834,\"contextWindow\":200000,\"maxOutputTokens\":32000}},\"permission_denials\":[],\"terminal_reason\":\"completed\",\"fast_mode_state\":\"off\",\"uuid\":\"8f3956c0-d5da-4ef9-9a50-1568a7eb7b95\"}",
+        "agent_output": "{\"type\":\"result\",\"subtype\":\"success\",\"is_error\":false,\"duration_ms\":19356,\"duration_api_ms\":15598,\"num_turns\":6,\"result\":\"Both files updated \u2014 `from helpers.math_ops import safe_add` \u2192 `from utils.math_ops import safe_add` in `app.py` and `report.py`.\",\"stop_reason\":\"end_turn\",\"session_id\":\"eec40150-d778-4920-b5d3-2c7e200f15f6\",\"total_cost_usd\":0.11204715,\"usage\":{\"input_tokens\":11,\"cache_creation_input_tokens\":14719,\"cache_read_input_tokens\":161393,\"output_tokens\":560,\"server_tool_use\":{\"web_search_requests\":0,\"web_fetch_requests\":0},\"service_tier\":\"standard\",\"cache_creation\":{\"ephemeral_1h_input_tokens\":0,\"ephemeral_5m_input_tokens\":14719},\"inference_geo\":\"\",\"iterations\":[],\"speed\":\"standard\"},\"modelUsage\":{\"claude-sonnet-4-6\":{\"inputTokens\":11,\"outputTokens\":560,\"cacheReadInputTokens\":161393,\"cacheCreationInputTokens\":14719,\"webSearchRequests\":0,\"costUSD\":0.11204715,\"contextWindow\":200000,\"maxOutputTokens\":32000}},\"permission_denials\":[],\"terminal_reason\":\"completed\",\"fast_mode_state\":\"off\",\"uuid\":\"2caefcd2-fba4-4177-a392-235c94de6cb2\"}",
         "allowed_touchpoints": [
           "app.py",
           "report.py"
@@ -220,23 +220,23 @@
         ],
         "classification": "pass",
         "description": "Repair the broken imports after the math_ops module was moved.",
-        "duration_ms": 16927,
+        "duration_ms": 22306,
         "execution_environment": {
           "mode": "native"
         },
         "regression_command": "python -m pytest -q",
         "regression_command_exit_code": 0,
-        "regression_command_output": "..                                                                       [100%]\n2 passed in 0.00s",
+        "regression_command_output": "..                                                                       [100%]\n2 passed in 0.01s",
         "success_command": "python -m pytest -q tests/test_app.py",
         "success_command_exit_code": 0,
         "success_command_output": "..                                                                       [100%]\n2 passed in 0.01s",
         "task_kind": "practical",
         "token_usage": {
-          "estimated_cost_usd": 0.2145834,
+          "estimated_cost_usd": 0.11204715,
           "input_tokens": 11,
-          "output_tokens": 537,
+          "output_tokens": 560,
           "provider": "anthropic",
-          "total_tokens": 548
+          "total_tokens": 571
         },
         "touchpoint_violations": []
       },
@@ -249,27 +249,27 @@
       "agent_name": "omc",
       "raw": {
         "agent_log": {
-          "cache_creation_input_tokens": 44355,
-          "cache_read_input_tokens": 130843,
-          "cost_usd": 0.21478215000000003,
-          "duration_api_ms": 14672,
+          "cache_creation_input_tokens": 44532,
+          "cache_read_input_tokens": 131254,
+          "cost_usd": 0.21844919999999998,
+          "duration_api_ms": 16861,
           "input_tokens": 11,
           "model_usage": {
             "claude-sonnet-4-6": {
-              "cacheCreationInputTokens": 44355,
-              "cacheReadInputTokens": 130843,
+              "cacheCreationInputTokens": 44532,
+              "cacheReadInputTokens": 131254,
               "contextWindow": 200000,
-              "costUSD": 0.21478215000000003,
+              "costUSD": 0.21844919999999998,
               "inputTokens": 11,
               "maxOutputTokens": 32000,
-              "outputTokens": 611,
+              "outputTokens": 803,
               "webSearchRequests": 0
             }
           },
           "num_turns": 4,
-          "output_tokens": 611
+          "output_tokens": 803
         },
-        "agent_output": "{\"type\":\"result\",\"subtype\":\"success\",\"is_error\":false,\"duration_ms\":17322,\"duration_api_ms\":14672,\"num_turns\":4,\"result\":\"The changes add:\\n- **Email trimming**: `email.strip()` removes leading/trailing whitespace\\n- **Email validation**: checks for `@` presence, non-empty local part and domain, and `.` in domain \u2014 raises `ValueError` for invalid addresses\",\"stop_reason\":\"end_turn\",\"session_id\":\"445d3071-adc0-4916-9a89-cd3ba0d3b677\",\"total_cost_usd\":0.21478215000000003,\"usage\":{\"input_tokens\":11,\"cache_creation_input_tokens\":44355,\"cache_read_input_tokens\":130843,\"output_tokens\":611,\"server_tool_use\":{\"web_search_requests\":0,\"web_fetch_requests\":0},\"service_tier\":\"standard\",\"cache_creation\":{\"ephemeral_1h_input_tokens\":0,\"ephemeral_5m_input_tokens\":44355},\"inference_geo\":\"\",\"iterations\":[],\"speed\":\"standard\"},\"modelUsage\":{\"claude-sonnet-4-6\":{\"inputTokens\":11,\"outputTokens\":611,\"cacheReadInputTokens\":130843,\"cacheCreationInputTokens\":44355,\"webSearchRequests\":0,\"costUSD\":0.21478215000000003,\"contextWindow\":200000,\"maxOutputTokens\":32000}},\"permission_denials\":[],\"terminal_reason\":\"completed\",\"fast_mode_state\":\"off\",\"uuid\":\"25f58042-1a68-49e4-8570-6c4e8bc9f459\"}",
+        "agent_output": "{\"type\":\"result\",\"subtype\":\"success\",\"is_error\":false,\"duration_ms\":21990,\"duration_api_ms\":16861,\"num_turns\":4,\"result\":\"Done. Changes made to `create_user`:\\n\\n1. **Trim email** \u2014 `email.strip()` before any validation\\n2. **Validate email** \u2014 raises `ValueError(\\\"Invalid email address\\\")` if:\\n   - Empty after trimming\\n   - No `@` present\\n   - No local part, no domain, or domain has no `.`\",\"stop_reason\":\"end_turn\",\"session_id\":\"3470eadf-fe1d-4ee9-9918-28629eb8a010\",\"total_cost_usd\":0.21844919999999998,\"usage\":{\"input_tokens\":11,\"cache_creation_input_tokens\":44532,\"cache_read_input_tokens\":131254,\"output_tokens\":803,\"server_tool_use\":{\"web_search_requests\":0,\"web_fetch_requests\":0},\"service_tier\":\"standard\",\"cache_creation\":{\"ephemeral_1h_input_tokens\":0,\"ephemeral_5m_input_tokens\":44532},\"inference_geo\":\"\",\"iterations\":[],\"speed\":\"standard\"},\"modelUsage\":{\"claude-sonnet-4-6\":{\"inputTokens\":11,\"outputTokens\":803,\"cacheReadInputTokens\":131254,\"cacheCreationInputTokens\":44532,\"webSearchRequests\":0,\"costUSD\":0.21844919999999998,\"contextWindow\":200000,\"maxOutputTokens\":32000}},\"permission_denials\":[],\"terminal_reason\":\"completed\",\"fast_mode_state\":\"off\",\"uuid\":\"abe2e340-5d2f-41f7-9088-01dbabf89379\"}",
         "allowed_touchpoints": [
           "user_service.py"
         ],
@@ -278,23 +278,23 @@
         ],
         "classification": "pass",
         "description": "Add the missing email validation and trimming behavior.",
-        "duration_ms": 19454,
+        "duration_ms": 25175,
         "execution_environment": {
           "mode": "native"
         },
         "regression_command": "python -m pytest -q",
         "regression_command_exit_code": 0,
-        "regression_command_output": "..                                                                       [100%]\n2 passed in 0.00s",
+        "regression_command_output": "..                                                                       [100%]\n2 passed in 0.01s",
         "success_command": "python -m pytest -q tests/test_user_service.py",
         "success_command_exit_code": 0,
         "success_command_output": "..                                                                       [100%]\n2 passed in 0.01s",
         "task_kind": "practical",
         "token_usage": {
-          "estimated_cost_usd": 0.21478215000000003,
+          "estimated_cost_usd": 0.21844919999999998,
           "input_tokens": 11,
-          "output_tokens": 611,
+          "output_tokens": 803,
           "provider": "anthropic",
-          "total_tokens": 622
+          "total_tokens": 814
         },
         "touchpoint_violations": []
       },
