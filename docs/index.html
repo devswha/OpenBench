@@ -286,6 +286,7 @@
       <button class="tab-btn" id="btn-memory-mb" role="tab" data-tab="memory-mb" aria-selected="false" aria-controls="tab-memory-mb">Memory</button>
       <button class="tab-btn" id="btn-binary-size-mb" role="tab" data-tab="binary-size-mb" aria-selected="false" aria-controls="tab-binary-size-mb">Binary size</button>
       <button class="tab-btn" id="btn-practical" role="tab" data-tab="practical" aria-selected="false" aria-controls="tab-practical">Practical</button>
+      <button class="tab-btn" id="btn-tasks" role="tab" data-tab="tasks" aria-selected="false" aria-controls="tab-tasks">Tasks</button>
     </nav>
 
     <div id="tab-overview" class="tab-panel" role="tabpanel" aria-labelledby="btn-overview">
@@ -1158,6 +1159,74 @@
 </ul>
 </article>
 </div>
+    </div>
+
+    
+    <div id="tab-tasks" class="tab-panel" role="tabpanel" aria-labelledby="btn-tasks">
+      <article class="card" style="margin-bottom: 16px;">
+        <p class="metric-description">Each task is a self-contained Python fixture with a deliberate bug or missing feature. Agents receive only a task description and the list of editable files. Tests are hidden and applied only during evaluation.</p>
+      </article>
+      
+      <article class="card" style="margin-bottom: 12px;">
+        <h3>Single-file bug fix</h3>
+        <p style="margin: 4px 0;"><span class="chip chip-ok" style="margin-left: 0;">Easy</span> <span class="chip chip-warn" style="margin-left: 4px;">Bug Fix</span></p>
+        <table style="margin-top: 8px;">
+          <tbody>
+            <tr><th style="width: 100px;">Bug</th><td style="font-family: inherit;">The add_numbers() function uses subtraction (-) instead of addition (+).</td></tr>
+            <tr><th>Goal</th><td style="font-family: inherit;">Fix the operator so the calculator returns correct sums.</td></tr>
+            <tr><th>Files</th><td><code>calculator.py</code></td></tr>
+            <tr><th>Why this test</th><td style="font-family: inherit;">Tests the most basic capability: reading code, spotting a single-character bug, and making a minimal fix.</td></tr>
+          </tbody>
+        </table>
+      </article>
+      <article class="card" style="margin-bottom: 12px;">
+        <h3>Failing unit test repair</h3>
+        <p style="margin: 4px 0;"><span class="chip chip-ok" style="margin-left: 0;">Easy</span> <span class="chip chip-warn" style="margin-left: 4px;">Bug Fix</span></p>
+        <table style="margin-top: 8px;">
+          <tbody>
+            <tr><th style="width: 100px;">Bug</th><td style="font-family: inherit;">The slugify() function replaces spaces with underscores (_) but tests expect hyphens (-).</td></tr>
+            <tr><th>Goal</th><td style="font-family: inherit;">Change the replacement character from underscore to hyphen.</td></tr>
+            <tr><th>Files</th><td><code>text_utils.py</code></td></tr>
+            <tr><th>Why this test</th><td style="font-family: inherit;">Tests whether the agent can infer the expected behavior from context without seeing the test file.</td></tr>
+          </tbody>
+        </table>
+      </article>
+      <article class="card" style="margin-bottom: 12px;">
+        <h3>Config schema migration</h3>
+        <p style="margin: 4px 0;"><span class="chip chip-ok" style="margin-left: 0;">Easy</span> <span class="chip chip-warn" style="margin-left: 4px;">Feature</span></p>
+        <table style="margin-top: 8px;">
+          <tbody>
+            <tr><th style="width: 100px;">Bug</th><td style="font-family: inherit;">load_timeout() only reads timeout_ms but the new schema uses timeout_seconds.</td></tr>
+            <tr><th>Goal</th><td style="font-family: inherit;">Support both timeout_seconds (new) and timeout_ms (legacy) fields with backward compatibility.</td></tr>
+            <tr><th>Files</th><td><code>config_loader.py</code></td></tr>
+            <tr><th>Why this test</th><td style="font-family: inherit;">Tests the agent&#x27;s ability to add a feature while preserving existing behavior — a common real-world pattern.</td></tr>
+          </tbody>
+        </table>
+      </article>
+      <article class="card" style="margin-bottom: 12px;">
+        <h3>Multi-file import repair</h3>
+        <p style="margin: 4px 0;"><span class="chip chip-ok" style="margin-left: 0;">Medium</span> <span class="chip chip-warn" style="margin-left: 4px;">Debug</span></p>
+        <table style="margin-top: 8px;">
+          <tbody>
+            <tr><th style="width: 100px;">Bug</th><td style="font-family: inherit;">Two files import from helpers.math_ops, but the module was moved to utils.math_ops.</td></tr>
+            <tr><th>Goal</th><td style="font-family: inherit;">Update imports in both app.py and report.py to use the new path.</td></tr>
+            <tr><th>Files</th><td><code>app.py, report.py</code></td></tr>
+            <tr><th>Why this test</th><td style="font-family: inherit;">Tests multi-file awareness: the agent must find and fix the same broken import in two separate files.</td></tr>
+          </tbody>
+        </table>
+      </article>
+      <article class="card" style="margin-bottom: 12px;">
+        <h3>Validation and error handling patch</h3>
+        <p style="margin: 4px 0;"><span class="chip chip-ok" style="margin-left: 0;">Easy</span> <span class="chip chip-warn" style="margin-left: 4px;">Feature</span></p>
+        <table style="margin-top: 8px;">
+          <tbody>
+            <tr><th style="width: 100px;">Bug</th><td style="font-family: inherit;">create_user() accepts any email including blank strings without validation.</td></tr>
+            <tr><th>Goal</th><td style="font-family: inherit;">Add email trimming and raise ValueError for blank emails.</td></tr>
+            <tr><th>Files</th><td><code>user_service.py</code></td></tr>
+            <tr><th>Why this test</th><td style="font-family: inherit;">Tests the agent&#x27;s ability to add input validation logic based on a natural-language description.</td></tr>
+          </tbody>
+        </table>
+      </article>
     </div>
 
   </main>

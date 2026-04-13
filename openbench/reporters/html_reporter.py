@@ -40,6 +40,7 @@ class StaticHtmlReporter:
             self._render_metric_tab_panel(report, metric) for metric in RUNTIME_METRICS
         )
         practical_panel = self._render_practical_tab_panel(report)
+        tasks_panel = self._render_tasks_tab_panel(report)
         tab_buttons = self._render_tab_buttons(report)
 
         return f"""<!DOCTYPE html>
@@ -353,6 +354,7 @@ class StaticHtmlReporter:
 
     {metric_tab_panels}
     {practical_panel}
+    {tasks_panel}
   </main>
 
   <script>
@@ -397,6 +399,7 @@ class StaticHtmlReporter:
             tabs.extend((metric.key.replace("_", "-"), metric.label) for metric in RUNTIME_METRICS)
         if report.practical_agents:
             tabs.append(("practical", "Practical"))
+            tabs.append(("tasks", "Tasks"))
         return "\n      ".join(
             f'<button class="tab-btn" id="btn-{escape(tab_id)}" role="tab" '
             f'data-tab="{escape(tab_id)}" aria-selected="false" '
@@ -1007,4 +1010,81 @@ class StaticHtmlReporter:
   {violations}
   {error}
 </li>
+"""
+
+    TASK_DESCRIPTIONS: dict[str, dict[str, str]] = {
+        "single-file-bug-fix": {
+            "title": "Single-file bug fix",
+            "difficulty": "Easy",
+            "category": "Bug Fix",
+            "what": "The add_numbers() function uses subtraction (-) instead of addition (+).",
+            "goal": "Fix the operator so the calculator returns correct sums.",
+            "files": "calculator.py",
+            "why": "Tests the most basic capability: reading code, spotting a single-character bug, and making a minimal fix.",
+        },
+        "failing-unit-test-repair": {
+            "title": "Failing unit test repair",
+            "difficulty": "Easy",
+            "category": "Bug Fix",
+            "what": "The slugify() function replaces spaces with underscores (_) but tests expect hyphens (-).",
+            "goal": "Change the replacement character from underscore to hyphen.",
+            "files": "text_utils.py",
+            "why": "Tests whether the agent can infer the expected behavior from context without seeing the test file.",
+        },
+        "config-schema-migration": {
+            "title": "Config schema migration",
+            "difficulty": "Easy",
+            "category": "Feature",
+            "what": "load_timeout() only reads timeout_ms but the new schema uses timeout_seconds.",
+            "goal": "Support both timeout_seconds (new) and timeout_ms (legacy) fields with backward compatibility.",
+            "files": "config_loader.py",
+            "why": "Tests the agent's ability to add a feature while preserving existing behavior — a common real-world pattern.",
+        },
+        "multi-file-import-repair": {
+            "title": "Multi-file import repair",
+            "difficulty": "Medium",
+            "category": "Debug",
+            "what": "Two files import from helpers.math_ops, but the module was moved to utils.math_ops.",
+            "goal": "Update imports in both app.py and report.py to use the new path.",
+            "files": "app.py, report.py",
+            "why": "Tests multi-file awareness: the agent must find and fix the same broken import in two separate files.",
+        },
+        "validation-error-handling-patch": {
+            "title": "Validation and error handling patch",
+            "difficulty": "Easy",
+            "category": "Feature",
+            "what": "create_user() accepts any email including blank strings without validation.",
+            "goal": "Add email trimming and raise ValueError for blank emails.",
+            "files": "user_service.py",
+            "why": "Tests the agent's ability to add input validation logic based on a natural-language description.",
+        },
+    }
+
+    def _render_tasks_tab_panel(self, report: RuntimeReport) -> str:
+        if not report.practical_agents:
+            return ""
+
+        task_cards = []
+        for task_id, info in self.TASK_DESCRIPTIONS.items():
+            task_cards.append(f"""
+      <article class="card" style="margin-bottom: 12px;">
+        <h3>{escape(info['title'])}</h3>
+        <p style="margin: 4px 0;"><span class="chip chip-ok" style="margin-left: 0;">{escape(info['difficulty'])}</span> <span class="chip chip-warn" style="margin-left: 4px;">{escape(info['category'])}</span></p>
+        <table style="margin-top: 8px;">
+          <tbody>
+            <tr><th style="width: 100px;">Bug</th><td style="font-family: inherit;">{escape(info['what'])}</td></tr>
+            <tr><th>Goal</th><td style="font-family: inherit;">{escape(info['goal'])}</td></tr>
+            <tr><th>Files</th><td><code>{escape(info['files'])}</code></td></tr>
+            <tr><th>Why this test</th><td style="font-family: inherit;">{escape(info['why'])}</td></tr>
+          </tbody>
+        </table>
+      </article>""")
+
+        return f"""
+    <div id="tab-tasks" class="tab-panel" role="tabpanel" aria-labelledby="btn-tasks">
+      <article class="card" style="margin-bottom: 16px;">
+        <p class="metric-description">Each task is a self-contained Python fixture with a deliberate bug or missing feature. Agents receive only a task description and the list of editable files. Tests are hidden and applied only during evaluation.</p>
+      </article>
+      {''.join(task_cards)}
+    </div>
 """
