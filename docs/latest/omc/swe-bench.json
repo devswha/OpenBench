@@ -3,53 +3,47 @@
   "execution_environment": {
     "mode": "native"
   },
-  "generated_at": "2026-04-13T06:08:13.964796+00:00",
+  "generated_at": "2026-04-13T06:39:34.675831+00:00",
   "suite": "swe-bench",
   "summary": {
-    "failed_tasks": 1,
-    "successful_tasks": 2,
+    "failed_tasks": 0,
+    "successful_tasks": 3,
     "task_count": 3
   },
   "tasks": [
     {
       "agent_name": "omc",
       "raw": {
-        "category": "bugfix",
-        "classification": "patch_error",
-        "description": "Class methods from nested classes cannot be used as Field.default.\nDescription\n\t \n\t\t(last modified by Mariusz Felisiak)\n\t \nGiven the following model:\n \nclass Profile(models.Model):\n\tclass Capability(m",
-        "difficulty": "hard",
-        "duration_ms": 188212,
-        "error_message": "git apply failed: error: tests/migrations/test_writer.py: does not match index",
-        "task_kind": "swe-bench"
-      },
-      "status": "failed",
-      "task_name": "django__django-17087",
-      "tier": 2,
-      "value": 0.0
-    },
-    {
-      "agent_name": "omc",
-      "raw": {
         "agent_log": {
-          "cache_creation_input_tokens": 108455,
-          "cache_read_input_tokens": 915664,
-          "cost_usd": 0.7451914499999999,
-          "duration_api_ms": 86787,
-          "input_tokens": 62,
+          "cache_creation_input_tokens": 113048,
+          "cache_read_input_tokens": 1119358,
+          "cost_usd": 1.06085995,
+          "duration_api_ms": 139461,
+          "input_tokens": 69,
           "model_usage": {
-            "claude-sonnet-4-6": {
-              "cacheCreationInputTokens": 108455,
-              "cacheReadInputTokens": 915664,
+            "claude-haiku-4-5-20251001": {
+              "cacheCreationInputTokens": 110997,
+              "cacheReadInputTokens": 634533,
               "contextWindow": 200000,
-              "costUSD": 0.7451914499999999,
-              "inputTokens": 62,
+              "costUSD": 0.22129554999999998,
+              "inputTokens": 51,
               "maxOutputTokens": 32000,
-              "outputTokens": 4240,
+              "outputTokens": 3809,
+              "webSearchRequests": 0
+            },
+            "claude-sonnet-4-6": {
+              "cacheCreationInputTokens": 113048,
+              "cacheReadInputTokens": 1119358,
+              "contextWindow": 200000,
+              "costUSD": 0.8395644000000001,
+              "inputTokens": 69,
+              "maxOutputTokens": 32000,
+              "outputTokens": 5308,
               "webSearchRequests": 0
             }
           },
-          "num_turns": 21,
-          "output_tokens": 4240
+          "num_turns": 25,
+          "output_tokens": 5308
         },
         "category": "bugfix",
         "changed_files": [
@@ -60,13 +54,73 @@
           "Django.egg-info/not-zip-safe",
           "Django.egg-info/requires.txt",
           "Django.egg-info/top_level.txt",
-          "django/db/models/fields/files.py",
-          "tests/field_deconstruction/tests.py"
+          "django/db/migrations/serializer.py",
+          "tests/migrations/test_writer.py"
+        ],
+        "classification": "pass",
+        "description": "Class methods from nested classes cannot be used as Field.default.\nDescription\n\t \n\t\t(last modified by Mariusz Felisiak)\n\t \nGiven the following model:\n \nclass Profile(models.Model):\n\tclass Capability(m",
+        "difficulty": "hard",
+        "duration_ms": 259343,
+        "fail_to_pass": [
+          "test_serialize_nested_class_method (migrations.test_writer.WriterTests.test_serialize_nested_class_method)"
+        ],
+        "fail_to_pass_resolved": true,
+        "instance_id": "django__django-17087",
+        "repo": "django/django",
+        "task_kind": "swe-bench",
+        "test_output": "Unable to find image 'swebench/sweb.eval.x86_64.django__django-17087:latest' locally\ndocker: Error response from daemon: pull access denied for swebench/sweb.eval.x86_64.django__django-17087, repository does not exist or may require 'docker login': denied: requested access to the resource is denied\n\nRun 'docker run --help' for more information",
+        "token_usage": {
+          "estimated_cost_usd": 1.06085995,
+          "input_tokens": 69,
+          "output_tokens": 5308,
+          "provider": "anthropic",
+          "total_tokens": 5377
+        }
+      },
+      "status": "success",
+      "task_name": "django__django-17087",
+      "tier": 2,
+      "value": 100.0
+    },
+    {
+      "agent_name": "omc",
+      "raw": {
+        "agent_log": {
+          "cache_creation_input_tokens": 107752,
+          "cache_read_input_tokens": 1126124,
+          "cost_usd": 0.8039142,
+          "duration_api_ms": 298012,
+          "input_tokens": 74,
+          "model_usage": {
+            "claude-sonnet-4-6": {
+              "cacheCreationInputTokens": 107752,
+              "cacheReadInputTokens": 1126124,
+              "contextWindow": 200000,
+              "costUSD": 0.8039142,
+              "inputTokens": 74,
+              "maxOutputTokens": 32000,
+              "outputTokens": 4119,
+              "webSearchRequests": 0
+            }
+          },
+          "num_turns": 25,
+          "output_tokens": 4119
+        },
+        "category": "bugfix",
+        "changed_files": [
+          "Django.egg-info/PKG-INFO",
+          "Django.egg-info/SOURCES.txt",
+          "Django.egg-info/dependency_links.txt",
+          "Django.egg-info/entry_points.txt",
+          "Django.egg-info/not-zip-safe",
+          "Django.egg-info/requires.txt",
+          "Django.egg-info/top_level.txt",
+          "django/db/models/fields/files.py"
         ],
         "classification": "pass",
         "description": "Callable storage on FileField fails to deconstruct when it returns default_storage\nDescription\n\t\nIf the storage argument on a FileField is set to a callable that returns default_storage, it is omitted",
         "difficulty": "hard",
-        "duration_ms": 113168,
+        "duration_ms": 373266,
         "fail_to_pass": [
           "A callable that returns default_storage is not omitted when"
         ],
@@ -76,11 +130,11 @@
         "task_kind": "swe-bench",
         "test_output": "Unable to find image 'swebench/sweb.eval.x86_64.django__django-16493:latest' locally\ndocker: Error response from daemon: pull access denied for swebench/sweb.eval.x86_64.django__django-16493, repository does not exist or may require 'docker login': denied: requested access to the resource is denied\n\nRun 'docker run --help' for more information",
         "token_usage": {
-          "estimated_cost_usd": 0.7451914499999999,
-          "input_tokens": 62,
-          "output_tokens": 4240,
+          "estimated_cost_usd": 0.8039142,
+          "input_tokens": 74,
+          "output_tokens": 4119,
           "provider": "anthropic",
-          "total_tokens": 4302
+          "total_tokens": 4193
         }
       },
       "status": "success",
@@ -92,25 +146,25 @@
       "agent_name": "omc",
       "raw": {
         "agent_log": {
-          "cache_creation_input_tokens": 108772,
-          "cache_read_input_tokens": 747415,
-          "cost_usd": 0.6980744999999998,
-          "duration_api_ms": 137485,
-          "input_tokens": 50,
+          "cache_creation_input_tokens": 98074,
+          "cache_read_input_tokens": 415766,
+          "cost_usd": 0.5313482999999999,
+          "duration_api_ms": 45934,
+          "input_tokens": 32,
           "model_usage": {
             "claude-sonnet-4-6": {
-              "cacheCreationInputTokens": 108772,
-              "cacheReadInputTokens": 747415,
+              "cacheCreationInputTokens": 98074,
+              "cacheReadInputTokens": 415766,
               "contextWindow": 200000,
-              "costUSD": 0.6980744999999998,
-              "inputTokens": 50,
+              "costUSD": 0.5313482999999999,
+              "inputTokens": 32,
               "maxOutputTokens": 32000,
-              "outputTokens": 4387,
+              "outputTokens": 2583,
               "webSearchRequests": 0
             }
           },
-          "num_turns": 18,
-          "output_tokens": 4387
+          "num_turns": 12,
+          "output_tokens": 2583
         },
         "category": "bugfix",
         "changed_files": [
@@ -119,7 +173,7 @@
         "classification": "pass",
         "description": "collect_factor_and_dimension does not detect equivalent dimensions in addition\nCode to reproduce:\r\n```python\r\nfrom sympy.physics import units\r\nfrom sympy.physics.units.systems.si import SI\r\n\r\nv1 = uni",
         "difficulty": "hard",
-        "duration_ms": 158434,
+        "duration_ms": 72341,
         "fail_to_pass": [
           "test_issue_24211"
         ],
@@ -129,11 +183,11 @@
         "task_kind": "swe-bench",
         "test_output": "Unable to find image 'swebench/sweb.eval.x86_64.sympy__sympy-24213:latest' locally\ndocker: Error response from daemon: pull access denied for swebench/sweb.eval.x86_64.sympy__sympy-24213, repository does not exist or may require 'docker login': denied: requested access to the resource is denied\n\nRun 'docker run --help' for more information",
         "token_usage": {
-          "estimated_cost_usd": 0.6980744999999998,
-          "input_tokens": 50,
-          "output_tokens": 4387,
+          "estimated_cost_usd": 0.5313482999999999,
+          "input_tokens": 32,
+          "output_tokens": 2583,
           "provider": "anthropic",
-          "total_tokens": 4437
+          "total_tokens": 2615
         }
       },
       "status": "success",
