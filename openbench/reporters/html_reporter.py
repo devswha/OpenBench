@@ -883,7 +883,7 @@ class StaticHtmlReporter:
             for agent in report.practical_agents
         )
         sub_headers = "".join(
-            "<th>Result</th><th>Duration</th><th>Input tok</th><th>Cached tok</th><th>Output tok</th>"
+            "<th>Result</th><th>Duration</th><th>Total in</th><th>Cached</th><th>Output</th>"
             for _ in report.practical_agents
         )
 
@@ -901,25 +901,31 @@ class StaticHtmlReporter:
                     chip = '<span class="chip chip-warn">REGR</span>'
                 else:
                     chip = '<span class="chip chip-fail">FAIL</span>'
-                input_tok = "—"
                 output_tok = "—"
+                total_input = "—"
                 cached_tok = "—"
+                raw_input = 0
+                raw_cached = 0
                 if task.token_usage:
                     it = task.token_usage.get("input_tokens")
                     ot = task.token_usage.get("output_tokens")
                     if isinstance(it, (int, float)):
-                        input_tok = f"{int(it):,}"
+                        raw_input = int(it)
                     if isinstance(ot, (int, float)):
                         output_tok = f"{int(ot):,}"
-                agent_log = task.agent_log if hasattr(task, "agent_log") and task.agent_log else None
-                if agent_log:
-                    cc = agent_log.get("cache_creation_input_tokens") or agent_log.get("cached_input_tokens")
-                    cr = agent_log.get("cache_read_input_tokens")
-                    if isinstance(cc, (int, float)) and isinstance(cr, (int, float)):
-                        cached_tok = f"{int(cc + cr):,}"
-                    elif isinstance(cc, (int, float)):
-                        cached_tok = f"{int(cc):,}"
-                cells += f"<td>{chip}</td><td>{escape(task.formatted_duration)}</td><td>{escape(input_tok)}</td><td>{escape(cached_tok)}</td><td>{escape(output_tok)}</td>"
+                log = task.agent_log or {}
+                cc = log.get("cache_creation_input_tokens") if "cache_creation_input_tokens" in log else log.get("cached_input_tokens")
+                cr = log.get("cache_read_input_tokens")
+                if isinstance(cc, (int, float)) and isinstance(cr, (int, float)):
+                    raw_cached = int(cc) + int(cr)
+                elif isinstance(cc, (int, float)):
+                    raw_cached = int(cc)
+                # Normalize: total input = raw_input + cache (for Claude where input excludes cache)
+                normalized_input = raw_input + raw_cached if raw_cached > raw_input else raw_input
+                if normalized_input > 0:
+                    total_input = f"{normalized_input:,}"
+                cached_tok = f"{raw_cached:,}" if raw_cached > 0 else "—"
+                cells += f"<td>{chip}</td><td>{escape(task.formatted_duration)}</td><td>{escape(total_input)}</td><td>{escape(cached_tok)}</td><td>{escape(output_tok)}</td>"
             rows.append(f"<tr><td>{escape(task_name)}</td>{cells}</tr>")
 
         totals_row = "<tr style=\"font-weight: 600; border-top: 2px solid var(--border);\"><td>Total</td>"
@@ -928,10 +934,31 @@ class StaticHtmlReporter:
             total = len(agent.tasks)
             durations = [t.duration_ms for t in agent.tasks if t.duration_ms is not None]
             total_dur = sum(durations) if durations else None
-            input_toks = [t.token_usage.get("input_tokens", 0) for t in agent.tasks if t.token_usage and isinstance(t.token_usage.get("input_tokens"), (int, float))]
-            output_toks = [t.token_usage.get("output_tokens", 0) for t in agent.tasks if t.token_usage and isinstance(t.token_usage.get("output_tokens"), (int, float))]
-            total_input = sum(input_toks) if input_toks else None
-            total_output = sum(output_toks) if output_toks else None
+            sum_input = 0
+            sum_cached = 0
+            sum_output = 0
+            has_tokens = False
+            for t in agent.tasks:
+                raw_in = 0
+                raw_cached = 0
+                if t.token_usage:
+                    it = t.token_usage.get("input_tokens")
+                    ot = t.token_usage.get("output_tokens")
+                    if isinstance(it, (int, float)):
+                        raw_in = int(it)
+                    if isinstance(ot, (int, float)):
+                        sum_output += int(ot)
+                        has_tokens = True
+                log = t.agent_log or {}
+                cc = log.get("cache_creation_input_tokens") if "cache_creation_input_tokens" in log else log.get("cached_input_tokens")
+                cr = log.get("cache_read_input_tokens")
+                if isinstance(cc, (int, float)) and isinstance(cr, (int, float)):
+                    raw_cached = int(cc) + int(cr)
+                elif isinstance(cc, (int, float)):
+                    raw_cached = int(cc)
+                normalized = raw_in + raw_cached if raw_cached > raw_in else raw_in
+                sum_input += normalized
+                sum_cached += raw_cached
             dur_str = "—"
             if total_dur is not None:
                 if total_dur < 1000:
@@ -940,20 +967,9 @@ class StaticHtmlReporter:
                     dur_str = f"{total_dur / 1000:.1f}s"
                 else:
                     dur_str = f"{int(total_dur // 60000)}m {(total_dur % 60000) / 1000:.0f}s"
-            cached_vals = []
-            for t in agent.tasks:
-                log = t.agent_log if hasattr(t, "agent_log") and t.agent_log else None
-                if log:
-                    cc = log.get("cache_creation_input_tokens") or log.get("cached_input_tokens")
-                    cr = log.get("cache_read_input_tokens")
-                    if isinstance(cc, (int, float)) and isinstance(cr, (int, float)):
-                        cached_vals.append(int(cc + cr))
-                    elif isinstance(cc, (int, float)):
-                        cached_vals.append(int(cc))
-            total_cached = sum(cached_vals) if cached_vals else None
-            input_str = f"{int(total_input):,}" if total_input is not None else "—"
-            cached_str = f"{int(total_cached):,}" if total_cached is not None else "—"
-            output_str = f"{int(total_output):,}" if total_output is not None else "—"
+            input_str = f"{sum_input:,}" if has_tokens else "—"
+            cached_str = f"{sum_cached:,}" if sum_cached > 0 else "—"
+            output_str = f"{sum_output:,}" if has_tokens else "—"
             totals_row += f"<td>{passed}/{total}</td><td>{escape(dur_str)}</td><td>{escape(input_str)}</td><td>{escape(cached_str)}</td><td>{escape(output_str)}</td>"
         totals_row += "</tr>"
 
@@ -1010,24 +1026,27 @@ class StaticHtmlReporter:
         changed = ", ".join(task.changed_files) if task.changed_files else "none"
         error = f"<div class=\"failure\">Error: {escape(task.error_message)}</div>" if task.error_message else ""
         duration_line = f"<div>Duration: {escape(task.formatted_duration)}</div>"
-        input_tok = "—"
+        raw_input = 0
+        raw_cached = 0
         output_tok = "—"
-        cached_tok = "—"
         if task.token_usage:
             it = task.token_usage.get("input_tokens")
             ot = task.token_usage.get("output_tokens")
             if isinstance(it, (int, float)):
-                input_tok = f"{int(it):,}"
+                raw_input = int(it)
             if isinstance(ot, (int, float)):
                 output_tok = f"{int(ot):,}"
-        if task.agent_log:
-            cc = task.agent_log.get("cache_creation_input_tokens") or task.agent_log.get("cached_input_tokens")
-            cr = task.agent_log.get("cache_read_input_tokens")
-            if isinstance(cc, (int, float)) and isinstance(cr, (int, float)):
-                cached_tok = f"{int(cc + cr):,}"
-            elif isinstance(cc, (int, float)):
-                cached_tok = f"{int(cc):,}"
-        token_line = f"<div>Tokens: {escape(input_tok)} in / {escape(cached_tok)} cached / {escape(output_tok)} out</div>"
+        log = task.agent_log or {}
+        cc = log.get("cache_creation_input_tokens") if "cache_creation_input_tokens" in log else log.get("cached_input_tokens")
+        cr = log.get("cache_read_input_tokens")
+        if isinstance(cc, (int, float)) and isinstance(cr, (int, float)):
+            raw_cached = int(cc) + int(cr)
+        elif isinstance(cc, (int, float)):
+            raw_cached = int(cc)
+        normalized_input = raw_input + raw_cached if raw_cached > raw_input else raw_input
+        total_input = f"{normalized_input:,}" if normalized_input > 0 else "—"
+        cached_tok = f"{raw_cached:,}" if raw_cached > 0 else "—"
+        token_line = f"<div>Tokens: {escape(total_input)} in / {escape(cached_tok)} cached / {escape(output_tok)} out</div>"
         return f"""
 <li>
   <span class="task-label">{escape(task.task_name)}</span>

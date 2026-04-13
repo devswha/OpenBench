@@ -83,7 +83,7 @@ class PracticalTaskSuite(BenchSuite):
                 "classification": "agent_error",
                 "changed_files": result.files_changed,
                 "touchpoint_violations": touchpoint_violations,
-                "error_message": result.error_message,
+                "agent_error_message": result.error_message,
                 "output": result.output,
                 "execution_environment": execution_environment,
                 "duration_ms": result.duration_ms,
